@@ -1,0 +1,22 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.1.0">
+
+  <!-- AppHost: .NET Aspire orchestrator for local development -->
+  <!-- Note: Aspire SDK uses implicit packages, so we disable CPM for this project -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UserSecretsId>4f056bfe-7ae8-4493-87c7-cd29c84c375f</UserSecretsId>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.2.0" />
+    <PackageReference Include="Aspire.Hosting.Redis" Version="9.2.0" />
+    <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="9.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SailsEnergy.Api\SailsEnergy.Api.csproj" />
+  </ItemGroup>
+
+</Project>

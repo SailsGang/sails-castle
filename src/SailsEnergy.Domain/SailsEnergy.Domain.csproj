@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk"><!-- Domain Layer: No external dependencies! This is the core of Clean Architecture -->
+
+
+
+
+
+
+</Project>
