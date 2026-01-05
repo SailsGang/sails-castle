@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SailsEnergy.Application\SailsEnergy.Application.csproj" />
+    <ProjectReference Include="..\SailsEnergy.ServiceDefaults\SailsEnergy.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

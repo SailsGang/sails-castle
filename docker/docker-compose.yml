@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: sails-postgres
+    environment:
+      POSTGRES_USER: sail
+      POSTGRES_PASSWORD: sails123
+      POSTGRES_DB: sailsenergy
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U sails -d sailsenergy" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8
+    container_name: sails-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: sails-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: sails
+      RABBITMQ_DEFAULT_PASS: sails123
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_running" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  seq:
+    image: datalust/seq:latest
+    container_name: sails-seq
+    environment:
+      ACCEPT_EULA: "Y"
+    ports:
+      - "5341:5341" # Ingestion
+      - "8081:80"   # UI
+    volumes:
+      - seq_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  seq_data:

@@ -183,3 +183,10 @@ csharp_style_prefer_primary_constructors = true:suggestion
 
 # Braces preferences - allow single line without braces
 csharp_prefer_braces = when_multiline:suggestion
+
+# Test files - allow underscore naming (Method_Scenario_ExpectedResult)
+[*Tests.cs]
+dotnet_diagnostic.CA1707.severity = none
+
+[*Tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none

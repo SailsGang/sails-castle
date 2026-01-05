@@ -1,13 +1,21 @@
+using SailsEnergy.ServiceDefaults;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 
+
+// Add Aspire service defaults (OpenTelemetry, health checks, resilience)
+builder.AddServiceDefaults();
+
 // OpenAPI/Swagger
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+// Map Aspire default endpoints (health checks)
+app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -19,11 +27,6 @@ if (app.Environment.IsDevelopment())
                .WithTheme(ScalarTheme.BluePlanet);
     });
 }
-
-// Health check endpoint
-app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow }))
-   .WithName("HealthCheck")
-   .WithTags("Health");
 
 // Root endpoint
 app.MapGet("/", () => Results.Ok(new
