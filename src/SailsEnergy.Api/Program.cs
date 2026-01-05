@@ -1,13 +1,14 @@
+using SailsEnergy.Infrastructure;
 using SailsEnergy.ServiceDefaults;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
-
-
 // Add Aspire service defaults (OpenTelemetry, health checks, resilience)
 builder.AddServiceDefaults();
+
+// Add Infrastructure (Marten, etc.)
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // OpenAPI/Swagger
 builder.Services.AddOpenApi();

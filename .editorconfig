@@ -190,3 +190,10 @@ dotnet_diagnostic.CA1707.severity = none
 
 [*Tests/**/*.cs]
 dotnet_diagnostic.CA1707.severity = none
+
+# Handlers - DI guarantees non-null parameters
+[*Handler.cs]
+dotnet_diagnostic.CA1062.severity = none
+# ASP.NET Core doesn't need ConfigureAwait
+[*.cs]
+dotnet_diagnostic.CA2007.severity = none

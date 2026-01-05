@@ -1,7 +1,7 @@
-namespace SailsEnergy.Domain.Tests.Entities;
-
 using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.Exceptions;
+
+namespace SailsEnergy.Domain.Tests.Entities;
 
 public class CarTests
 {
