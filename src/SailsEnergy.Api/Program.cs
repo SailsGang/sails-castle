@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using SailsEnergy.Api.Endpoints;
 using SailsEnergy.Api.Extensions;
+using SailsEnergy.Api.Middleware;
 using SailsEnergy.Application;
 using SailsEnergy.Infrastructure;
 using SailsEnergy.ServiceDefaults;
@@ -54,7 +55,15 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddValidatorsFromAssemblyContaining<ApplicationMarker>();
 
 // OpenAPI
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((doc, context, ct) =>
+    {
+        doc.Info.Title = "SailsEnergy API";
+        doc.Info.Version = "v1";
+        return Task.CompletedTask;
+    });
+});
 
 var app = builder.Build();
 
@@ -67,8 +76,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandler();
-
 app.UseCors("Frontend");
+app.UseRequestLogging();
 
 app.MapDefaultEndpoints();
 
@@ -81,7 +90,9 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(options =>
     {
         options.WithTitle("SailsEnergy API")
-               .WithTheme(ScalarTheme.BluePlanet);
+               .WithTheme(ScalarTheme.Kepler)
+               .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+               .WithPreferredScheme("Bearer");
     });
 }
 
