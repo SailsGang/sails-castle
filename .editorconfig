@@ -197,3 +197,17 @@ dotnet_diagnostic.CA1062.severity = none
 # ASP.NET Core doesn't need ConfigureAwait
 [*.cs]
 dotnet_diagnostic.CA2007.severity = none
+
+# DI extension methods - parameters guaranteed non-null
+[*Extensions.cs]
+dotnet_diagnostic.CA1062.severity = none
+
+# DbContext and other framework overrides
+[*DbContext.cs]
+dotnet_diagnostic.CA1062.severity = none
+
+# EF Core Migrations - auto-generated
+[**/Migrations/*.cs]
+dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.IDE0161.severity = none
+csharp_style_namespace_declarations = block_scoped:none

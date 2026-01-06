@@ -1,3 +1,11 @@
+using System.Text;
+using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.IdentityModel.Tokens;
+using SailsEnergy.Api.Endpoints;
+using SailsEnergy.Api.Extensions;
+using SailsEnergy.Application;
 using SailsEnergy.Infrastructure;
 using SailsEnergy.ServiceDefaults;
 using Scalar.AspNetCore;
@@ -9,16 +17,64 @@ builder.AddServiceDefaults();
 
 // Add Infrastructure (Marten, etc.)
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddIdentityServices(builder.Configuration);
+builder.AddMessaging();
 
-// OpenAPI/Swagger
+// JWT Authentication
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddAuthorization();
+
+builder.Services.AddExceptionHandler<SailsEnergy.Api.Handlers.GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+// CORS for frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
+// Rate limiting for auth endpoints
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("auth", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 10;
+        opt.QueueLimit = 0;
+    });
+});
+
+builder.Services.AddValidatorsFromAssemblyContaining<ApplicationMarker>();
+
+// OpenAPI
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Map Aspire default endpoints (health checks)
+app.UseRateLimiter();
+
+// Seed database
+if (app.Environment.IsDevelopment())
+{
+    await SailsEnergy.Infrastructure.Identity.DatabaseSeeder.SeedAsync(app.Services);
+}
+
+app.UseExceptionHandler();
+
+app.UseCors("Frontend");
+
 app.MapDefaultEndpoints();
 
-// Configure the HTTP request pipeline
+app.UseAuthentication();
+app.UseAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -29,7 +85,9 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Root endpoint
+// Endpoints
+app.MapAuthEndpoints();
+
 app.MapGet("/", () => Results.Ok(new
 {
     Name = "SailsEnergy API",
@@ -39,4 +97,4 @@ app.MapGet("/", () => Results.Ok(new
 .WithName("Root")
 .ExcludeFromDescription();
 
-app.Run();
+await app.RunAsync();

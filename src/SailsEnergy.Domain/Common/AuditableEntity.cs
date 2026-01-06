@@ -7,6 +7,8 @@ public class AuditableEntity : Entity, IAuditable
     public DateTimeOffset? UpdatedAt { get; private set; }
     public Guid? UpdatedBy { get; private set; }
 
+    protected AuditableEntity() { }
+
     protected void SetCreated(Guid userId, DateTimeOffset? timestamp = null)
     {
         CreatedAt = timestamp ?? DateTimeOffset.UtcNow;

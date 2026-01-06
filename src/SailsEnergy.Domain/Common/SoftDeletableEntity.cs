@@ -6,6 +6,8 @@ public class SoftDeletableEntity : AuditableEntity, ISoftDeletable
     public DateTimeOffset? DeletedAt { get; private set; }
     public Guid? DeletedBy { get; private set; }
 
+    protected SoftDeletableEntity() { }
+
     public void SoftDelete(Guid userId, DateTimeOffset? timestamp = null)
     {
         IsDeleted = true;

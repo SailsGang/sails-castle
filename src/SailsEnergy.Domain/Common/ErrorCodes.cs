@@ -4,6 +4,12 @@ public static class ErrorCodes
 {
     // Auth
     public const string Unauthorized = "UNAUTHORIZED";
+    public const string AuthFailed = "AUTH_FAILED";
+    public const string EmailExists = "EMAIL_EXISTS";
+    public const string InvalidPassword = "INVALID_PASSWORD";
+    public const string InvalidCredentials = "INVALID_CREDENTIAL";
+    public const string InvalidRefreshToken = "INVALID_REFRESH_TOKEN";
+    public const string ValidationFailed = "VALIDATION_FAILED";
 
     // Gang
     public const string GangNotFound = "GANG_NOT_FOUND";
