@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using SailsEnergy.Domain.Exceptions;
@@ -7,11 +6,6 @@ namespace SailsEnergy.Api.Handlers;
 
 public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
-    private static readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
-
     public async ValueTask<bool> TryHandleAsync(
         HttpContext context,
         Exception exception,

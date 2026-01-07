@@ -1,9 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace SailsEnergy.Application.Features.Auth.Commands;
 
 public record RegisterCommand(
-    string Email,
-    string Password,
-    string ConfirmPassword,
-    string DisplayName,
+    [Required] string Email,
+    [Required] string Password,
+    [Required] string ConfirmPassword,
+    [Required] string DisplayName,
     string? FirstName,
     string? LastName);

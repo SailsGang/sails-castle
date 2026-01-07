@@ -64,10 +64,10 @@ public class AuthServiceTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value!.AccessToken.Should().Be("access-token");
-        result.Value!.RefreshToken.Should().Be("refresh-token");
-        result.Value!.Email.Should().Be(command.Email);
-        result.Value!.DisplayName.Should().Be(command.DisplayName);
+        result.AccessToken.Should().Be("access-token");
+        result.RefreshToken.Should().Be("refresh-token");
+        result.Email.Should().Be(command.Email);
+        result.DisplayName.Should().Be(command.DisplayName);
     }
 
     [Fact]
@@ -144,9 +144,9 @@ public class AuthServiceTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value!.AccessToken.Should().Be("access-token");
-        result.Value!.RefreshToken.Should().Be("refresh-token");
-        result.Value!.UserId.Should().Be(user.Id);
+        result.AccessToken.Should().Be("access-token");
+        result.RefreshToken.Should().Be("refresh-token");
+        result.UserId.Should().Be(user.Id);
     }
 
     [Fact]

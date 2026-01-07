@@ -1,3 +1,7 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace SailsEnergy.Application.Features.Auth.Commands;
 
-public record LoginCommand(string Email, string Password);
+public record LoginCommand(
+    [Required] string Email,
+    [Required] string Password);

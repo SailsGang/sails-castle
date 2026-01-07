@@ -1,5 +1,4 @@
 using SailsEnergy.Application.Abstractions;
-using SailsEnergy.Domain.Exceptions;
 
 namespace SailsEnergy.Application.Features.Auth.Commands;
 

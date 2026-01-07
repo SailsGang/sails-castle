@@ -87,10 +87,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference(options =>
     {
-        options.WithTitle("SailsEnergy API")
-               .WithTheme(ScalarTheme.Kepler)
-               .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
-               .WithPreferredScheme("Bearer");
+        options.Title = "SailsEnergy API";
+        options.Theme = ScalarTheme.Moon;
+        options.DefaultHttpClient = new KeyValuePair<ScalarTarget, ScalarClient>(ScalarTarget.CSharp, ScalarClient.HttpClient);
+        options.Authentication = new ScalarAuthenticationOptions
+        {
+            PreferredSecurityScheme = "Bearer"
+        };
     });
 }
 
