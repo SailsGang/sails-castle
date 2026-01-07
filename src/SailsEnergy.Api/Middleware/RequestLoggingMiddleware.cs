@@ -4,21 +4,30 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggi
 {
     public async Task InvokeAsync(HttpContext context)
     {
-        var start = DateTime.UtcNow;
+        var correlationId = context.Request.Headers["X-Correlation-ID"].FirstOrDefault()
+                            ?? Guid.NewGuid().ToString();
 
-        try
+        context.Response.Headers.Append("X-Correlation-ID", correlationId);
+
+        using (logger.BeginScope(new Dictionary<string, object> { ["CorrelationId"] = correlationId }))
         {
-            await next(context);
-        }
-        finally
-        {
-            var elapsed = DateTime.UtcNow - start;
-            logger.LogInformation(
-                "{Method} {Path} responded {StatusCode} in {ElapsedMs}ms",
-                context.Request.Method,
-                context.Request.Path,
-                context.Response.StatusCode,
-                elapsed.TotalMilliseconds);
+            var start = DateTime.UtcNow;
+
+            try
+            {
+                await next(context);
+            }
+            finally
+            {
+                var elapsed = DateTime.UtcNow - start;
+                logger.LogInformation(
+                    "{Method} {Path} responded {StatusCode} in {ElapsedMs}ms [CorrelationId: {CorrelationId}]",
+                    context.Request.Method,
+                    context.Request.Path,
+                    context.Response.StatusCode,
+                    elapsed.TotalMilliseconds,
+                    correlationId);
+            }
         }
     }
 }

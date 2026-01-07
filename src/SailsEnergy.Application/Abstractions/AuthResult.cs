@@ -1,19 +1,25 @@
+using SailsEnergy.Domain.Common;
+
 namespace SailsEnergy.Application.Abstractions;
 
-public record AuthResult(
-    bool Success,
-    string? AccessToken = null,
-    string? RefreshToken = null,
-    DateTimeOffset? ExpiresAt = null,
-    Guid? UserId = null,
-    string? Email = null,
-    string? Username = null,
-    string? ErrorCode = null,
-    string? ErrorMessage = null)
+public record AuthTokens(
+    string AccessToken,
+    string RefreshToken,
+    DateTimeOffset ExpiresAt,
+    Guid UserId,
+    string Email,
+    string DisplayName);
+
+public class AuthResult : Result<AuthTokens>
 {
+    private AuthResult(AuthTokens value) : base(value) { }
+
+    private AuthResult(string code, string message) : base(code, message) { }
+
     public static AuthResult Ok(string accessToken, string refreshToken,
         DateTimeOffset expiresAt, Guid userId, string email, string displayName)
-        => new(true, accessToken, refreshToken, expiresAt, userId, email, displayName);
-    public static AuthResult Failure(string code, string message)
-        => new(false, ErrorCode: code, ErrorMessage: message);
+        => new(new AuthTokens(accessToken, refreshToken, expiresAt, userId, email, displayName));
+
+    public static new AuthResult Failure(string code, string message)
+        => new(code, message);
 }

@@ -1,8 +1,5 @@
-using System.Text;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.IdentityModel.Tokens;
 using SailsEnergy.Api.Endpoints;
 using SailsEnergy.Api.Extensions;
 using SailsEnergy.Api.Middleware;
@@ -77,6 +74,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseExceptionHandler();
 app.UseCors("Frontend");
+app.UseSecurityHeaders();
 app.UseRequestLogging();
 
 app.MapDefaultEndpoints();

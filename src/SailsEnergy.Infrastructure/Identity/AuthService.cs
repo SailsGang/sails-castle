@@ -7,6 +7,7 @@ using SailsEnergy.Application.Features.Auth.Commands;
 using SailsEnergy.Domain.Common;
 using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.ValueObjects;
+using SailsEnergy.Infrastructure.Services;
 
 namespace SailsEnergy.Infrastructure.Identity;
 
@@ -14,32 +15,28 @@ public class AuthService(
     UserManager<ApplicationUser> userManager,
     IJwtService jwtService,
     IOptions<JwtSettings> settings,
-    IDocumentSession session) : IAuthService
+    IDocumentSession session,
+    IAuditService auditService) : IAuthService
 {
     private readonly JwtSettings _settings = settings.Value;
 
     public async Task<AuthResult> RegisterAsync(
-        string email,
-        string password,
-        string confirmPassword,
-        string username,
-        string? firstName,
-        string? lastName,
+        RegisterCommand command,
         CancellationToken ct = default)
     {
-        var existingUser = await userManager.FindByEmailAsync(email);
+        var existingUser = await userManager.FindByEmailAsync(command.Email);
         if (existingUser is not null)
             return AuthResult.Failure(ErrorCodes.EmailExists, "Email already registered.");
 
-        if (password != confirmPassword)
+        if (command.Password != command.ConfirmPassword)
             return AuthResult.Failure(ErrorCodes.ValidationFailed, "Passwords do not match.");
 
         var user = new ApplicationUser
         {
-            UserName = username,
-            Email = email,
+            UserName = command.DisplayName,
+            Email = command.Email
         };
-        var result = await userManager.CreateAsync(user, password);
+        var result = await userManager.CreateAsync(user, command.Password);
 
         if (!result.Succeeded)
         {
@@ -50,15 +47,15 @@ public class AuthService(
         // Add default role AFTER successful creation
         await userManager.AddToRoleAsync(user, nameof(UserRole.User));
 
-        var profile = UserProfile.Create(user.Id, username, user.Id);
-        if (firstName is not null || lastName is not null)
-            profile.SetName(firstName, lastName, user.Id);
+        var profile = UserProfile.Create(user.Id, command.DisplayName, user.Id);
+        if (command.FirstName is not null || command.LastName is not null)
+            profile.SetName(command.FirstName, command.LastName, user.Id);
         session.Store(profile);
 
         user.UserProfileId = profile.Id;
         await userManager.UpdateAsync(user);
 
-        var accessToken = jwtService.GenerateAccessToken(user.Id, email, [nameof(UserRole.User)]);
+        var accessToken = jwtService.GenerateAccessToken(user.Id, command.Email, [nameof(UserRole.User)]);
         var refreshToken = jwtService.GenerateRefreshToken();
 
         user.RefreshToken = refreshToken;
@@ -68,28 +65,42 @@ public class AuthService(
 
         await session.SaveChangesAsync(ct);
 
+        MetricsService.Registrations.Add(1);
+        auditService.Log(new AuditEvent("REGISTER", "AUTH", user.Id, command.Email, user.Id, "User", true));
+
         return AuthResult.Ok(accessToken, refreshToken,
             DateTimeOffset.UtcNow.AddMinutes(_settings.AccessTokenExpirationMinutes),
-            user.Id, email, username);
+            user.Id, command.Email, command.DisplayName);
     }
 
     public async Task<AuthResult> LoginAsync(
-        string email, string password, CancellationToken ct = default)
+        LoginCommand command,
+        CancellationToken ct = default)
     {
-        var user = await userManager.FindByEmailAsync(email);
-        if (user is null)
-            return AuthResult.Failure(ErrorCodes.InvalidCredentials, "Invalid email or password.");
+        MetricsService.LoginAttempts.Add(1);
 
-        var validPassword = await userManager.CheckPasswordAsync(user, password);
-        if (!validPassword)
+        var user = await userManager.FindByEmailAsync(command.Email);
+        if (user is null)
+        {
+            MetricsService.LoginFailures.Add(1);
+            auditService.Log(new AuditEvent("LOGIN_FAILED", "AUTH", null, command.Email, null, null, false, "Invalid credentials"));
             return AuthResult.Failure(ErrorCodes.InvalidCredentials, "Invalid email or password.");
+        }
+
+        var validPassword = await userManager.CheckPasswordAsync(user, command.Password);
+        if (!validPassword)
+        {
+            MetricsService.LoginFailures.Add(1);
+            auditService.Log(new AuditEvent("LOGIN_FAILED", "AUTH", null, command.Email, null, null, false, "Invalid credentials"));
+            return AuthResult.Failure(ErrorCodes.InvalidCredentials, "Invalid email or password.");
+        }
 
         var profile = user.UserProfileId.HasValue
             ? await session.LoadAsync<UserProfile>(user.UserProfileId.Value, ct)
             : null;
 
         var roles = await userManager.GetRolesAsync(user);
-        var accessToken = jwtService.GenerateAccessToken(user.Id, email, roles);
+        var accessToken = jwtService.GenerateAccessToken(user.Id, command.Email, roles);
         var refreshToken = jwtService.GenerateRefreshToken();
 
         user.RefreshToken = refreshToken;
@@ -97,16 +108,20 @@ public class AuthService(
 
         await userManager.UpdateAsync(user);
 
+        MetricsService.LoginSuccesses.Add(1);
+        auditService.Log(new AuditEvent("LOGIN", "AUTH", user.Id, command.Email, null, null, true));
+
         return AuthResult.Ok(accessToken, refreshToken,
             DateTimeOffset.UtcNow.AddMinutes(_settings.AccessTokenExpirationMinutes),
-            user.Id, email, profile?.DisplayName ?? email);
+            user.Id, command.Email, profile?.DisplayName ?? command.Email);
     }
 
     public async Task<AuthResult> RefreshTokenAsync(
-        string accessToken, string refreshToken, CancellationToken ct = default)
+        RefreshTokenCommand command,
+        CancellationToken ct = default)
     {
         var user = await EntityFrameworkQueryableExtensions
-            .FirstOrDefaultAsync(userManager.Users, u => u.RefreshToken == refreshToken, ct);
+            .FirstOrDefaultAsync(userManager.Users, u => u.RefreshToken == command.RefreshToken, ct);
         if (user is null || user.RefreshTokenExpiryTime <= DateTimeOffset.UtcNow)
             return AuthResult.Failure(ErrorCodes.InvalidRefreshToken, "Invalid or expired refresh token.");
 
@@ -135,6 +150,8 @@ public class AuthService(
         user.RefreshToken = null;
         user.RefreshTokenExpiryTime = null;
         await userManager.UpdateAsync(user);
+
+        auditService.Log(new AuditEvent("LOGOUT", "AUTH", userId, null, null, null, true));
     }
 
 }

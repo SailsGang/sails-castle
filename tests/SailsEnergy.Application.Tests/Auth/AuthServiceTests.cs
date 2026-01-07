@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SailsEnergy.Application.Abstractions;
+using SailsEnergy.Application.Features.Auth.Commands;
 using SailsEnergy.Domain.Common;
 using SailsEnergy.Infrastructure.Identity;
 
@@ -15,11 +16,11 @@ public class AuthServiceTests
     private readonly IJwtService _jwtService;
     private readonly IOptions<JwtSettings> _jwtSettings;
     private readonly IDocumentSession _documentSession;
+    private readonly IAuditService _auditService;
     private readonly AuthService _sut;
 
     public AuthServiceTests()
     {
-        // Mock UserManager
         var userStore = Substitute.For<IUserStore<ApplicationUser>>();
         _userManager = Substitute.For<UserManager<ApplicationUser>>(
             userStore, null, null, null, null, null, null, null, null);
@@ -34,8 +35,9 @@ public class AuthServiceTests
             RefreshTokenExpirationDays = 7
         });
         _documentSession = Substitute.For<IDocumentSession>();
+        _auditService = Substitute.For<IAuditService>();
 
-        _sut = new AuthService(_userManager, _jwtService, _jwtSettings, _documentSession);
+        _sut = new AuthService(_userManager, _jwtService, _jwtSettings, _documentSession, _auditService);
     }
 
     #region RegisterAsync Tests
@@ -44,46 +46,44 @@ public class AuthServiceTests
     public async Task RegisterAsync_WithValidData_ShouldReturnSuccess()
     {
         // Arrange
-        var email = "test@example.com";
-        var password = "Password123!";
-        var username = "testuser";
+        var command = new RegisterCommand("test@example.com", "Password123!", "Password123!", "testuser", null, null);
 
-        _userManager.FindByEmailAsync(email).Returns((ApplicationUser?)null);
-        _userManager.CreateAsync(Arg.Any<ApplicationUser>(), password)
+        _userManager.FindByEmailAsync(command.Email).Returns((ApplicationUser?)null);
+        _userManager.CreateAsync(Arg.Any<ApplicationUser>(), command.Password)
             .Returns(IdentityResult.Success);
         _userManager.AddToRoleAsync(Arg.Any<ApplicationUser>(), Arg.Any<string>())
             .Returns(IdentityResult.Success);
         _userManager.UpdateAsync(Arg.Any<ApplicationUser>())
             .Returns(IdentityResult.Success);
-        _jwtService.GenerateAccessToken(Arg.Any<Guid>(), email, Arg.Any<IEnumerable<string>>())
+        _jwtService.GenerateAccessToken(Arg.Any<Guid>(), command.Email, Arg.Any<IEnumerable<string>>())
             .Returns("access-token");
         _jwtService.GenerateRefreshToken().Returns("refresh-token");
 
         // Act
-        var result = await _sut.RegisterAsync(email, password, password, username, null, null);
+        var result = await _sut.RegisterAsync(command);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.AccessToken.Should().Be("access-token");
-        result.RefreshToken.Should().Be("refresh-token");
-        result.Email.Should().Be(email);
-        result.Username.Should().Be(username);
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.AccessToken.Should().Be("access-token");
+        result.Value!.RefreshToken.Should().Be("refresh-token");
+        result.Value!.Email.Should().Be(command.Email);
+        result.Value!.DisplayName.Should().Be(command.DisplayName);
     }
 
     [Fact]
     public async Task RegisterAsync_WithExistingEmail_ShouldReturnFailure()
     {
         // Arrange
-        var email = "existing@example.com";
-        var existingUser = new ApplicationUser { Email = email };
+        var command = new RegisterCommand("existing@example.com", "Password123!", "Password123!", "testuser", null, null);
+        var existingUser = new ApplicationUser { Email = command.Email };
 
-        _userManager.FindByEmailAsync(email).Returns(existingUser);
+        _userManager.FindByEmailAsync(command.Email).Returns(existingUser);
 
         // Act
-        var result = await _sut.RegisterAsync(email, "Password123!", "Password123!", "testuser", null, null);
+        var result = await _sut.RegisterAsync(command);
 
         // Assert
-        result.Success.Should().BeFalse();
+        result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be(ErrorCodes.EmailExists);
     }
 
@@ -91,14 +91,14 @@ public class AuthServiceTests
     public async Task RegisterAsync_WithMismatchedPasswords_ShouldReturnFailure()
     {
         // Arrange
-        var email = "test@example.com";
-        _userManager.FindByEmailAsync(email).Returns((ApplicationUser?)null);
+        var command = new RegisterCommand("test@example.com", "Password123!", "DifferentPassword!", "testuser", null, null);
+        _userManager.FindByEmailAsync(command.Email).Returns((ApplicationUser?)null);
 
         // Act
-        var result = await _sut.RegisterAsync(email, "Password123!", "DifferentPassword!", "testuser", null, null);
+        var result = await _sut.RegisterAsync(command);
 
         // Assert
-        result.Success.Should().BeFalse();
+        result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be(ErrorCodes.ValidationFailed);
         result.ErrorMessage.Should().Contain("Passwords do not match");
     }
@@ -107,16 +107,16 @@ public class AuthServiceTests
     public async Task RegisterAsync_WhenCreateFails_ShouldReturnFailure()
     {
         // Arrange
-        var email = "test@example.com";
-        _userManager.FindByEmailAsync(email).Returns((ApplicationUser?)null);
+        var command = new RegisterCommand("test@example.com", "weak", "weak", "testuser", null, null);
+        _userManager.FindByEmailAsync(command.Email).Returns((ApplicationUser?)null);
         _userManager.CreateAsync(Arg.Any<ApplicationUser>(), Arg.Any<string>())
             .Returns(IdentityResult.Failed(new IdentityError { Description = "Password too weak" }));
 
         // Act
-        var result = await _sut.RegisterAsync(email, "weak", "weak", "testuser", null, null);
+        var result = await _sut.RegisterAsync(command);
 
         // Assert
-        result.Success.Should().BeFalse();
+        result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be(ErrorCodes.InvalidPassword);
     }
 
@@ -128,40 +128,39 @@ public class AuthServiceTests
     public async Task LoginAsync_WithValidCredentials_ShouldReturnSuccess()
     {
         // Arrange
-        var email = "test@example.com";
-        var password = "Password123!";
-        var user = new ApplicationUser { Id = Guid.NewGuid(), Email = email, UserName = "testuser" };
+        var command = new LoginCommand("test@example.com", "Password123!");
+        var user = new ApplicationUser { Id = Guid.NewGuid(), Email = command.Email, UserName = "testuser" };
 
-        _userManager.FindByEmailAsync(email).Returns(user);
-        _userManager.CheckPasswordAsync(user, password).Returns(true);
+        _userManager.FindByEmailAsync(command.Email).Returns(user);
+        _userManager.CheckPasswordAsync(user, command.Password).Returns(true);
         _userManager.GetRolesAsync(user).Returns(new List<string> { "User" });
         _userManager.UpdateAsync(user).Returns(IdentityResult.Success);
-        _jwtService.GenerateAccessToken(user.Id, email, Arg.Any<IEnumerable<string>>())
+        _jwtService.GenerateAccessToken(user.Id, command.Email, Arg.Any<IEnumerable<string>>())
             .Returns("access-token");
         _jwtService.GenerateRefreshToken().Returns("refresh-token");
 
         // Act
-        var result = await _sut.LoginAsync(email, password);
+        var result = await _sut.LoginAsync(command);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.AccessToken.Should().Be("access-token");
-        result.RefreshToken.Should().Be("refresh-token");
-        result.UserId.Should().Be(user.Id);
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.AccessToken.Should().Be("access-token");
+        result.Value!.RefreshToken.Should().Be("refresh-token");
+        result.Value!.UserId.Should().Be(user.Id);
     }
 
     [Fact]
     public async Task LoginAsync_WithNonExistentUser_ShouldReturnFailure()
     {
         // Arrange
-        var email = "nonexistent@example.com";
-        _userManager.FindByEmailAsync(email).Returns((ApplicationUser?)null);
+        var command = new LoginCommand("nonexistent@example.com", "Password123!");
+        _userManager.FindByEmailAsync(command.Email).Returns((ApplicationUser?)null);
 
         // Act
-        var result = await _sut.LoginAsync(email, "Password123!");
+        var result = await _sut.LoginAsync(command);
 
         // Assert
-        result.Success.Should().BeFalse();
+        result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be(ErrorCodes.InvalidCredentials);
     }
 
@@ -169,17 +168,17 @@ public class AuthServiceTests
     public async Task LoginAsync_WithWrongPassword_ShouldReturnFailure()
     {
         // Arrange
-        var email = "test@example.com";
-        var user = new ApplicationUser { Email = email };
+        var command = new LoginCommand("test@example.com", "WrongPassword!");
+        var user = new ApplicationUser { Email = command.Email };
 
-        _userManager.FindByEmailAsync(email).Returns(user);
+        _userManager.FindByEmailAsync(command.Email).Returns(user);
         _userManager.CheckPasswordAsync(user, Arg.Any<string>()).Returns(false);
 
         // Act
-        var result = await _sut.LoginAsync(email, "WrongPassword!");
+        var result = await _sut.LoginAsync(command);
 
         // Assert
-        result.Success.Should().BeFalse();
+        result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be(ErrorCodes.InvalidCredentials);
     }
 
@@ -190,15 +189,11 @@ public class AuthServiceTests
     [Fact(Skip = "Requires integration testing - EF Core FirstOrDefaultAsync cannot be mocked with NSubstitute")]
     public async Task RefreshTokenAsync_WithInvalidToken_ShouldReturnFailure()
     {
-        // This test requires integration testing with a real EF Core DbContext
-        // because EntityFrameworkQueryableExtensions.FirstOrDefaultAsync cannot be mocked
-        // See Phase 10: Testing & Polish for integration tests
+        var command = new RefreshTokenCommand("access-token", "invalid-refresh-token");
 
-        // Act
-        var result = await _sut.RefreshTokenAsync("access-token", "invalid-refresh-token");
+        var result = await _sut.RefreshTokenAsync(command);
 
-        // Assert
-        result.Success.Should().BeFalse();
+        result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be(ErrorCodes.InvalidRefreshToken);
     }
 

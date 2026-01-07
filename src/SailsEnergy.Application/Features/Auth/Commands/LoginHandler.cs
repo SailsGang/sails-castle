@@ -5,15 +5,8 @@ namespace SailsEnergy.Application.Features.Auth.Commands;
 
 public static class LoginHandler
 {
-    public static async Task<AuthResponse> HandleAsync(
-        LoginCommand command, IAuthService authService, CancellationToken ct)
-    {
-        var result = await authService.LoginAsync(command.Email, command.Password, ct);
-
-        return !result.Success
-            ? throw new BusinessRuleException(result.ErrorCode!, result.ErrorMessage!)
-            : new AuthResponse(
-                result.AccessToken!, result.RefreshToken!, result.ExpiresAt!.Value,
-                result.UserId!.Value, result.Email!, result.Username!);
-    }
+    public static async Task<AuthResult> HandleAsync(
+        LoginCommand command,
+        IAuthService authService,
+        CancellationToken ct) => await authService.LoginAsync(command, ct);
 }

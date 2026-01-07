@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using SailsEnergy.Domain.Exceptions;
 
 namespace SailsEnergy.Api.Handlers;
@@ -28,12 +29,22 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         if (statusCode == StatusCodes.Status500InternalServerError)
             logger.LogError(exception, "Unhandled exception occurred");
 
-        context.Response.StatusCode = statusCode;
-        context.Response.ContentType = "application/json";
+        var problemDetails = new ProblemDetails
+        {
+            Status = statusCode,
+            Title = errorCode,
+            Detail = message,
+            Instance = context.Request.Path,
+            Extensions =
+            {
+                ["timestamp"] = DateTimeOffset.UtcNow,
+                ["correlationId"] = context.Response.Headers["X-Correlation-ID"].FirstOrDefault()
+            }
+        };
 
-        await context.Response.WriteAsync(
-            JsonSerializer.Serialize(new { error = errorCode, message, timestamp = DateTimeOffset.UtcNow }, _jsonOptions),
-            cancellationToken);
+        context.Response.StatusCode = statusCode;
+        await context.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+
 
         return true;
     }

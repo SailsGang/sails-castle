@@ -16,9 +16,6 @@ public static class InfrastructureServiceExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configuration);
-
         var connectionString = configuration.GetConnectionString("sailsenergy")
                                ?? configuration.GetConnectionString("Database")
                                ?? throw new InvalidOperationException("Database connection string not found");
@@ -27,14 +24,14 @@ public static class InfrastructureServiceExtensions
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+        services.AddScoped<IAuditService, AuditService>();
+
         return services;
     }
 
     public static IHostApplicationBuilder AddMessaging(
         this IHostApplicationBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(builder);
-
         var dbConnectionString = builder.Configuration.GetConnectionString("sailsenergy")
                                  ?? builder.Configuration.GetConnectionString("Database")
                                  ?? throw new InvalidOperationException("Database connection string not found");
