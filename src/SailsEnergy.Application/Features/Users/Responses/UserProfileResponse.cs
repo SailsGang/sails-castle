@@ -1,0 +1,9 @@
+namespace SailsEnergy.Application.Features.Users.Responses;
+
+public record UserProfileResponse(
+    Guid Id,
+    string Email,
+    string DisplayName,
+    string? FirstName,
+    string? LastName,
+    DateTimeOffset CreatedAt);

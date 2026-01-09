@@ -6,6 +6,7 @@
     <!-- Marten (Document DB + Event Sourcing) -->
     <PackageReference Include="Marten" />
     <PackageReference Include="Marten.AspNetCore" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
     <PackageReference Include="Newtonsoft.Json" />
 
     <!-- WolverineFx (Messaging + CQRS) -->

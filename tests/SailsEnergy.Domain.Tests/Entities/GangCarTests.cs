@@ -12,12 +12,11 @@ public class GangCarTests
     public void Create_WithValidData_ShouldSucceed()
     {
         // Act
-        var gangCar = GangCar.Create(_gangId, _carId, _memberId, _memberId);
+        var gangCar = GangCar.Create(_gangId, _carId, _memberId);
 
         // Assert
         gangCar.GangId.Should().Be(_gangId);
         gangCar.CarId.Should().Be(_carId);
-        gangCar.AddedByMemberId.Should().Be(_memberId);
         gangCar.IsActive.Should().BeTrue();
         gangCar.Id.Should().NotBeEmpty();
         gangCar.CreatedBy.Should().Be(_memberId);
@@ -28,7 +27,7 @@ public class GangCarTests
     public void Deactivate_ShouldSetIsActiveToFalse()
     {
         // Arrange
-        var gangCar = GangCar.Create(_gangId, _carId, _memberId, _memberId);
+        var gangCar = GangCar.Create(_gangId, _carId, _memberId);
         var updater = Guid.NewGuid();
 
         // Act
@@ -44,12 +43,12 @@ public class GangCarTests
     public void Reactivate_ShouldSetIsActiveToTrue()
     {
         // Arrange
-        var gangCar = GangCar.Create(_gangId, _carId, _memberId, _memberId);
+        var gangCar = GangCar.Create(_gangId, _carId, _memberId);
         gangCar.Deactivate(Guid.NewGuid());
         var reactivator = Guid.NewGuid();
 
         // Act
-        gangCar.Reactivate(reactivator);
+        gangCar.Activate(reactivator);
 
         // Assert
         gangCar.IsActive.Should().BeTrue();
@@ -60,7 +59,7 @@ public class GangCarTests
     public void Create_ShouldUseCreatedAtAsAddedAt()
     {
         // Act
-        var gangCar = GangCar.Create(_gangId, _carId, _memberId, _memberId);
+        var gangCar = GangCar.Create(_gangId, _carId, _memberId);
 
         // Assert
         // CreatedAt serves as the "added at" timestamp

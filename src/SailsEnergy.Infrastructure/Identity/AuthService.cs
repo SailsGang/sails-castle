@@ -1,9 +1,11 @@
-using Marten;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SailsEnergy.Application.Abstractions;
-using SailsEnergy.Application.Features.Auth.Commands;
+using SailsEnergy.Application.Common;
+using SailsEnergy.Application.Features.Auth.Commands.Login;
+using SailsEnergy.Application.Features.Auth.Commands.RefreshToken;
+using SailsEnergy.Application.Features.Auth.Commands.Register;
 using SailsEnergy.Domain.Common;
 using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.ValueObjects;
@@ -15,7 +17,7 @@ public class AuthService(
     UserManager<ApplicationUser> userManager,
     IJwtService jwtService,
     IOptions<JwtSettings> settings,
-    IDocumentSession session,
+    IAppDbContext dbContext,
     IAuditService auditService) : IAuthService
 {
     private readonly JwtSettings _settings = settings.Value;
@@ -44,13 +46,12 @@ public class AuthService(
             return AuthResult.Failure(ErrorCodes.InvalidPassword, errors);
         }
 
-        // Add default role AFTER successful creation
         await userManager.AddToRoleAsync(user, nameof(UserRole.User));
 
         var profile = UserProfile.Create(user.Id, command.DisplayName, user.Id);
         if (command.FirstName is not null || command.LastName is not null)
             profile.SetName(command.FirstName, command.LastName, user.Id);
-        session.Store(profile);
+        dbContext.UserProfiles.Add(profile);
 
         user.UserProfileId = profile.Id;
         await userManager.UpdateAsync(user);
@@ -63,7 +64,7 @@ public class AuthService(
 
         await userManager.UpdateAsync(user);
 
-        await session.SaveChangesAsync(ct);
+        await dbContext.SaveChangesAsync(ct);
 
         MetricsService.Registrations.Add(1);
         auditService.Log(new AuditEvent("REGISTER", "AUTH", user.Id, command.Email, user.Id, "User", true));
@@ -96,7 +97,7 @@ public class AuthService(
         }
 
         var profile = user.UserProfileId.HasValue
-            ? await session.LoadAsync<UserProfile>(user.UserProfileId.Value, ct)
+            ? await dbContext.UserProfiles.FirstOrDefaultAsync(p => p.Id == user.UserProfileId.Value, ct)
             : null;
 
         var roles = await userManager.GetRolesAsync(user);
@@ -120,13 +121,13 @@ public class AuthService(
         RefreshTokenCommand command,
         CancellationToken ct = default)
     {
-        var user = await EntityFrameworkQueryableExtensions
-            .FirstOrDefaultAsync(userManager.Users, u => u.RefreshToken == command.RefreshToken, ct);
+        var user = await userManager.Users
+            .FirstOrDefaultAsync(u => u.RefreshToken == command.RefreshToken, ct);
         if (user is null || user.RefreshTokenExpiryTime <= DateTimeOffset.UtcNow)
             return AuthResult.Failure(ErrorCodes.InvalidRefreshToken, "Invalid or expired refresh token.");
 
         var profile = user.UserProfileId.HasValue
-            ? await session.LoadAsync<UserProfile>(user.UserProfileId.Value, ct)
+            ? await dbContext.UserProfiles.FirstOrDefaultAsync(p => p.Id == user.UserProfileId.Value, ct)
             : null;
 
         var roles = await userManager.GetRolesAsync(user);

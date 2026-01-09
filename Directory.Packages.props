@@ -4,48 +4,40 @@
     All NuGet package versions are defined here. Projects reference packages WITHOUT versions.
     See: https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management
   -->
-
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-
   <ItemGroup Label="Core">
     <!-- Marten - Document DB + Event Sourcing -->
     <PackageVersion Include="Marten" Version="8.16.4" />
     <PackageVersion Include="Marten.AspNetCore" Version="8.16.4" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid" Version="10.1.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-
     <!-- WolverineFx - Messaging + CQRS (v5.x supports .NET 10) -->
     <PackageVersion Include="WolverineFx" Version="5.9.2" />
     <PackageVersion Include="WolverineFx.Marten" Version="5.9.2" />
     <PackageVersion Include="WolverineFx.RabbitMQ" Version="5.9.2" />
     <PackageVersion Include="WolverineFx.Http" Version="5.9.2" />
-
     <!-- Entity Framework Core (for Identity) -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" />
   </ItemGroup>
-
   <ItemGroup Label="Validation and Mapping">
     <!-- FluentValidation -->
     <PackageVersion Include="FluentValidation" Version="11.11.0" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
-
     <!-- Mapperly - Source-generated mapping -->
     <PackageVersion Include="Riok.Mapperly" Version="4.1.1" />
   </ItemGroup>
-
   <ItemGroup Label="API and Documentation">
     <!-- OpenAPI / Scalar -->
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.0.8" />
-
     <!-- Authentication -->
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
   </ItemGroup>
-
   <ItemGroup Label="Observability">
     <!-- Serilog -->
     <PackageVersion Include="Serilog" Version="4.2.0" />
@@ -54,7 +46,6 @@
     <PackageVersion Include="Serilog.Sinks.Seq" Version="9.0.0" />
     <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
-
     <!-- OpenTelemetry -->
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
@@ -62,11 +53,9 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
   </ItemGroup>
-
   <ItemGroup Label="Caching">
     <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.0" />
   </ItemGroup>
-
   <ItemGroup Label=".NET Aspire">
     <PackageVersion Include="Aspire.Hosting" Version="9.2.0" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.0" />
@@ -78,31 +67,24 @@
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.1.0" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.1.0" />
   </ItemGroup>
-
   <ItemGroup Label="Testing">
     <!-- xUnit -->
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-
     <!-- Assertions -->
     <PackageVersion Include="FluentAssertions" Version="7.0.0" />
-
     <!-- Mocking -->
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
-
     <!-- Architecture Tests -->
     <PackageVersion Include="TngTech.ArchUnitNET.xUnit" Version="0.11.0" />
-
     <!-- Integration Testing -->
     <PackageVersion Include="Testcontainers" Version="4.2.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.2.0" />
     <PackageVersion Include="Testcontainers.RabbitMq" Version="4.2.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="4.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0" />
-
     <!-- Code Coverage -->
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
   </ItemGroup>
-
 </Project>

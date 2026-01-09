@@ -1,12 +1,11 @@
-using JasperFx;
-using Marten;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SailsEnergy.Application;
-using SailsEnergy.Domain.Entities;
+using SailsEnergy.Application.Abstractions;
+using SailsEnergy.Infrastructure.Data;
 using Wolverine;
-using Wolverine.Marten;
 using Wolverine.RabbitMQ;
-using Weasel.Core;
 
 namespace SailsEnergy.Infrastructure.Messaging;
 
@@ -17,35 +16,14 @@ public static class WolverineConfiguration
         string dbConnectionString,
         string rabbitMqConnectionString)
     {
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(dbConnectionString));
+
+        builder.Services.AddScoped<IAppDbContext>(provider =>
+            provider.GetRequiredService<AppDbContext>());
+
         builder.UseWolverine(options =>
         {
-            options.Services.AddMarten(opts =>
-            {
-                opts.Connection(dbConnectionString);
-                opts.AutoCreateSchemaObjects = AutoCreate.All;
-
-                opts.UseNewtonsoftForSerialization(EnumStorage.AsString, Casing.CamelCase);
-
-                // Document registrations
-                opts.Schema.For<Gang>().Identity(x => x.Id);
-                opts.Schema.For<Car>().Identity(x => x.Id);
-                opts.Schema.For<UserProfile>().Identity(x => x.Id);
-                opts.Schema.For<Period>().Identity(x => x.Id);
-                opts.Schema.For<Tariff>().Identity(x => x.Id);
-                opts.Schema.For<EnergyLog>().Identity(x => x.Id);
-                opts.Schema.For<GangMember>().Identity(x => x.Id);
-                opts.Schema.For<GangCar>().Identity(x => x.Id);
-
-                // Indexes
-                opts.Schema.For<Gang>().Index(x => x.OwnerId);
-                opts.Schema.For<GangMember>().Index(x => x.GangId).Index(x => x.UserId);
-                opts.Schema.For<Period>().Index(x => x.GangId);
-                opts.Schema.For<EnergyLog>().Index(x => x.PeriodId).Index(x => x.GangId);
-                opts.Schema.For<Tariff>().Index(x => x.GangId);
-            })
-            .UseLightweightSessions()
-            .IntegrateWithWolverine();
-
             options.UseRabbitMq(new Uri(rabbitMqConnectionString))
                 .AutoProvision();
 
@@ -58,4 +36,3 @@ public static class WolverineConfiguration
         return builder;
     }
 }
-

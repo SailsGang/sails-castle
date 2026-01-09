@@ -1,8 +1,8 @@
 namespace SailsEnergy.Domain.Tests.Entities;
 
 using SailsEnergy.Domain.Entities;
-using SailsEnergy.Domain.Events;
-using SailsEnergy.Domain.Exceptions;
+using Events;
+using Exceptions;
 
 public class TariffTests
 {

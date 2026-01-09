@@ -1,9 +1,9 @@
 namespace SailsEnergy.Domain.Tests.Entities;
 
 using SailsEnergy.Domain.Entities;
-using SailsEnergy.Domain.Events;
-using SailsEnergy.Domain.Exceptions;
-using SailsEnergy.Domain.ValueObjects;
+using Events;
+using Exceptions;
+using ValueObjects;
 
 public class PeriodTests
 {

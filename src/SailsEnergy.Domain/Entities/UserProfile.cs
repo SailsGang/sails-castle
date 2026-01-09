@@ -11,7 +11,7 @@ public class UserProfile : SoftDeletableEntity
     public string? LastName { get; private set; }
     public Uri? AvatarUrl { get; private set; }
 
-    protected UserProfile() { } // For Marten
+    private UserProfile() { } // For EF Core
 
     public static UserProfile Create(Guid identityId, string displayName, Guid createdBy)
     {

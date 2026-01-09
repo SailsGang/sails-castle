@@ -1,5 +1,4 @@
 using SailsEnergy.Domain.Entities;
-using SailsEnergy.Domain.Exceptions;
 
 namespace SailsEnergy.Domain.Tests.Entities;
 
@@ -11,67 +10,31 @@ public class CarTests
     public void Create_WithValidData_ShouldSucceed()
     {
         // Act
-        var car = Car.Create(_ownerId, "My Tesla", "Model 3", "Tesla", _ownerId);
+        var car = Car.Create(_ownerId, "Model 3", "Tesla", _ownerId);
 
         // Assert
         car.OwnerId.Should().Be(_ownerId);
-        car.Name.Should().Be("My Tesla");
         car.Model.Should().Be("Model 3");
         car.Manufacturer.Should().Be("Tesla");
+        car.Name.Should().BeEmpty();
         car.LicensePlate.Should().BeNull();
         car.BatteryCapacityKwh.Should().BeNull();
         car.Id.Should().NotBeEmpty();
         car.CreatedBy.Should().Be(_ownerId);
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Create_WithInvalidName_ShouldThrow(string? name)
-    {
-        // Act & Assert
-        var act = () => Car.Create(_ownerId, name!, "Model", "Manufacturer", _ownerId);
-        act.Should().Throw<ValidationException>()
-           .Where(e => e.PropertyName == "name");
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Create_WithInvalidModel_ShouldThrow(string? model)
-    {
-        // Act & Assert
-        var act = () => Car.Create(_ownerId, "Name", model!, "Manufacturer", _ownerId);
-        act.Should().Throw<ValidationException>()
-           .Where(e => e.PropertyName == "model");
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Create_WithInvalidManufacturer_ShouldThrow(string? manufacturer)
-    {
-        // Act & Assert
-        var act = () => Car.Create(_ownerId, "Name", "Model", manufacturer!, _ownerId);
-        act.Should().Throw<ValidationException>()
-           .Where(e => e.PropertyName == "manufacturer");
-    }
-
     [Fact]
     public void SetName_WithValidName_ShouldUpdate()
     {
         // Arrange
-        var car = Car.Create(_ownerId, "Original", "Model", "Manufacturer", _ownerId);
+        var car = Car.Create(_ownerId, "Model", "Manufacturer", _ownerId);
         var updater = Guid.NewGuid();
 
         // Act
-        car.SetName("Updated", updater);
+        car.SetName("My Tesla", updater);
 
         // Assert
-        car.Name.Should().Be("Updated");
+        car.Name.Should().Be("My Tesla");
         car.UpdatedBy.Should().Be(updater);
     }
 
@@ -79,7 +42,7 @@ public class CarTests
     public void SetModel_WithValidModel_ShouldUpdate()
     {
         // Arrange
-        var car = Car.Create(_ownerId, "Name", "Original", "Manufacturer", _ownerId);
+        var car = Car.Create(_ownerId, "Original", "Manufacturer", _ownerId);
 
         // Act
         car.SetModel("New Model", Guid.NewGuid());
@@ -92,7 +55,7 @@ public class CarTests
     public void SetManufacturer_WithValidManufacturer_ShouldUpdate()
     {
         // Arrange
-        var car = Car.Create(_ownerId, "Name", "Model", "Original", _ownerId);
+        var car = Car.Create(_ownerId, "Model", "Original", _ownerId);
 
         // Act
         car.SetManufacturer("New Manufacturer", Guid.NewGuid());
@@ -105,7 +68,7 @@ public class CarTests
     public void SetLicensePlate_ShouldUpdate()
     {
         // Arrange
-        var car = Car.Create(_ownerId, "Name", "Model", "Manufacturer", _ownerId);
+        var car = Car.Create(_ownerId, "Model", "Manufacturer", _ownerId);
 
         // Act
         car.SetLicensePlate("AA1234BB", Guid.NewGuid());
@@ -118,7 +81,7 @@ public class CarTests
     public void SetLicensePlate_ToNull_ShouldClear()
     {
         // Arrange
-        var car = Car.Create(_ownerId, "Name", "Model", "Manufacturer", _ownerId);
+        var car = Car.Create(_ownerId, "Model", "Manufacturer", _ownerId);
         car.SetLicensePlate("AA1234BB", Guid.NewGuid());
 
         // Act
@@ -132,7 +95,7 @@ public class CarTests
     public void SetBatteryCapacity_ShouldUpdate()
     {
         // Arrange
-        var car = Car.Create(_ownerId, "Name", "Model", "Manufacturer", _ownerId);
+        var car = Car.Create(_ownerId, "Model", "Manufacturer", _ownerId);
 
         // Act
         car.SetBatteryCapacity(75.5m, Guid.NewGuid());
@@ -145,7 +108,7 @@ public class CarTests
     public void SetBatteryCapacity_ToNull_ShouldClear()
     {
         // Arrange
-        var car = Car.Create(_ownerId, "Name", "Model", "Manufacturer", _ownerId);
+        var car = Car.Create(_ownerId, "Model", "Manufacturer", _ownerId);
         car.SetBatteryCapacity(75.5m, Guid.NewGuid());
 
         // Act

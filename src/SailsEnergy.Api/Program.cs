@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using SailsEnergy.Api.Endpoints;
 using SailsEnergy.Api.Extensions;
 using SailsEnergy.Api.Middleware;
@@ -66,9 +67,19 @@ var app = builder.Build();
 
 app.UseRateLimiter();
 
-// Seed database
+// Apply EF Core migrations and seed database
 if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
+
+    // Migrate Identity database first
+    var identityDb = scope.ServiceProvider.GetRequiredService<SailsEnergy.Infrastructure.Identity.ApplicationDbContext>();
+    await identityDb.Database.MigrateAsync();
+
+    // Migrate App database
+    var appDb = scope.ServiceProvider.GetRequiredService<SailsEnergy.Infrastructure.Data.AppDbContext>();
+    await appDb.Database.MigrateAsync();
+
     await SailsEnergy.Infrastructure.Identity.DatabaseSeeder.SeedAsync(app.Services);
 }
 
@@ -99,6 +110,9 @@ if (app.Environment.IsDevelopment())
 
 // Endpoints
 app.MapAuthEndpoints();
+app.MapGangEndpoints();
+app.MapCarEndpoints();
+app.MapUserEndpoints();
 
 app.MapGet("/", () => Results.Ok(new
 {

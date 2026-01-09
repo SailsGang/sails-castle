@@ -6,7 +6,7 @@ namespace SailsEnergy.Domain.Entities;
 public class Car : SoftDeletableEntity
 {
     public Guid OwnerId { get; private set; }
-    public string Name { get; private set; } = string.Empty;
+    public string? Name { get; private set; } = string.Empty;
     public string? LicensePlate { get; private set; }
     public string Model { get; private set; } = string.Empty;
     public string Manufacturer { get; private set; } = string.Empty;
@@ -14,16 +14,11 @@ public class Car : SoftDeletableEntity
 
     private Car() { } // For Marten
 
-    public static Car Create(Guid ownerId, string name, string model, string manufacturer, Guid createdBy)
+    public static Car Create(Guid ownerId, string model, string manufacturer, Guid createdBy)
     {
-        ValidationException.ThrowIfNullOrWhiteSpace(name, nameof(name));
-        ValidationException.ThrowIfNullOrWhiteSpace(model, nameof(model));
-        ValidationException.ThrowIfNullOrWhiteSpace(manufacturer, nameof(manufacturer));
-
         var car = new Car
         {
             OwnerId = ownerId,
-            Name = name,
             Model =  model,
             Manufacturer = manufacturer
         };

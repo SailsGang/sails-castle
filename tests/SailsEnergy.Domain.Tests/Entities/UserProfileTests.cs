@@ -1,7 +1,7 @@
 namespace SailsEnergy.Domain.Tests.Entities;
 
 using SailsEnergy.Domain.Entities;
-using SailsEnergy.Domain.Exceptions;
+using Exceptions;
 
 public class UserProfileTests
 {

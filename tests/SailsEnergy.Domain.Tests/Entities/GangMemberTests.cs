@@ -1,8 +1,8 @@
 namespace SailsEnergy.Domain.Tests.Entities;
 
 using SailsEnergy.Domain.Entities;
-using SailsEnergy.Domain.Events;
-using SailsEnergy.Domain.ValueObjects;
+using Events;
+using ValueObjects;
 
 public class GangMemberTests
 {

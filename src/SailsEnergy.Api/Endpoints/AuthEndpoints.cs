@@ -1,6 +1,11 @@
 using SailsEnergy.Api.Filters;
 using SailsEnergy.Application.Abstractions;
-using SailsEnergy.Application.Features.Auth.Commands;
+using SailsEnergy.Application.Common;
+using SailsEnergy.Application.Features.Auth.Commands.Login;
+using SailsEnergy.Application.Features.Auth.Commands.Logout;
+using SailsEnergy.Application.Features.Auth.Commands.RefreshToken;
+using SailsEnergy.Application.Features.Auth.Commands.Register;
+using SailsEnergy.Application.Features.Auth.Responses;
 using Wolverine;
 
 namespace SailsEnergy.Api.Endpoints;
@@ -36,6 +41,7 @@ internal static class AuthEndpoints
             .AddEndpointFilter<ValidationFilter<RegisterCommand>>()
             .RequireRateLimiting("auth")
             .WithName("Register")
+            .WithDescription("Creates a new user account and returns JWT tokens.")
             .AllowAnonymous();
 
         group.MapPost("/login", async (
@@ -61,6 +67,7 @@ internal static class AuthEndpoints
             .AddEndpointFilter<ValidationFilter<LoginCommand>>()
             .RequireRateLimiting("auth")
             .WithName("Login")
+            .WithDescription("Authenticates user and returns JWT tokens.")
             .AllowAnonymous();
 
         group.MapPost("/refresh", async (
@@ -85,6 +92,7 @@ internal static class AuthEndpoints
             })
             .AddEndpointFilter<ValidationFilter<RefreshTokenCommand>>()
             .WithName("RefreshToken")
+            .WithDescription("Exchanges a valid refresh token for new JWT tokens.")
             .AllowAnonymous();
 
         group.MapPost("/logout", async (
@@ -95,6 +103,7 @@ internal static class AuthEndpoints
                 return Results.NoContent();
             })
             .WithName("Logout")
+            .WithDescription("Invalidates the current user's refresh token.")
             .RequireAuthorization();
     }
 }

@@ -1,4 +1,7 @@
-using SailsEnergy.Application.Features.Auth.Commands;
+using SailsEnergy.Application.Common;
+using SailsEnergy.Application.Features.Auth.Commands.Login;
+using SailsEnergy.Application.Features.Auth.Commands.RefreshToken;
+using SailsEnergy.Application.Features.Auth.Commands.Register;
 
 namespace SailsEnergy.Application.Abstractions;
 

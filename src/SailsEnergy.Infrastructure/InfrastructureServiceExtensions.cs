@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SailsEnergy.Application.Abstractions;
+using SailsEnergy.Infrastructure.Caching;
 using SailsEnergy.Infrastructure.Identity;
 using SailsEnergy.Infrastructure.Messaging;
 using SailsEnergy.Infrastructure.Services;
@@ -25,6 +26,17 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         services.AddScoped<IAuditService, AuditService>();
+
+        // Hybrid Cache (L1 Memory + L2 Redis when configured)
+        services.AddHybridCache(options =>
+        {
+            options.DefaultEntryOptions = new()
+            {
+                Expiration = TimeSpan.FromMinutes(5),
+                LocalCacheExpiration = TimeSpan.FromMinutes(1)
+            };
+        });
+        services.AddScoped<ICacheService, HybridCacheService>();
 
         return services;
     }
