@@ -38,6 +38,10 @@ public static class InfrastructureServiceExtensions
         });
         services.AddScoped<ICacheService, HybridCacheService>();
 
+        services.AddScoped<IGangAuthorizationService, GangAuthorizationService>();
+        services.AddScoped<IPeriodReportService, PeriodReportService>();
+        services.AddScoped<IUnitOfWorkCoordinator, UnitOfWorkCoordinator>();
+
         return services;
     }
 

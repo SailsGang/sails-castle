@@ -65,6 +65,15 @@ builder.Services.AddRateLimiter(options =>
         opt.PermitLimit = 100;
         opt.QueueLimit = 0;
     });
+
+    // Rate limit period closing - prevents spam closing periods
+    options.AddSlidingWindowLimiter("period-close", opt =>
+    {
+        opt.Window = TimeSpan.FromHours(1);
+        opt.PermitLimit = 2;
+        opt.SegmentsPerWindow = 4;
+        opt.QueueLimit = 0;
+    });
 });
 
 builder.Services.AddValidatorsFromAssemblyContaining<ApplicationMarker>();
@@ -136,6 +145,8 @@ app.MapGangEndpoints();
 app.MapCarEndpoints();
 app.MapUserEndpoints();
 app.MapEnergyEndpoints();
+app.MapPeriodEndpoints();
+app.MapTariffEndpoints();
 
 app.MapGet("/", () => Results.Ok(new
 {

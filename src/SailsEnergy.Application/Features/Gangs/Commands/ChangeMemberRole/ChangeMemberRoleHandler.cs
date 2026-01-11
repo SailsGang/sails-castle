@@ -16,6 +16,7 @@ public static class ChangeMemberRoleHandler
         ChangeMemberRoleCommand command,
         IAppDbContext dbContext,
         ICurrentUserService currentUser,
+        IGangAuthorizationService gangAuth,
         ICacheService cache,
         ILogger<ChangeMemberRoleCommand> logger,
         IRealtimeNotificationService notificationService,
@@ -26,15 +27,12 @@ public static class ChangeMemberRoleHandler
         activity?.SetTag("member.id", command.MemberId.ToString());
         activity?.SetTag("new.role", command.Role);
         activity?.SetTag("user.id", currentUser.UserId?.ToString());
+
+        await gangAuth.RequireOwnerAsync(command.GangId, ct);
+
         var member = await dbContext.GangMembers
             .FirstOrDefaultAsync(m => m.GangId == command.GangId && m.Id == command.MemberId, ct)
             ?? throw new BusinessRuleException(ErrorCodes.NotFound, "Member not found.");
-
-        var currentMembership = await dbContext.GangMembers
-            .FirstOrDefaultAsync(m => m.GangId == command.GangId && m.UserId == currentUser.UserId, ct);
-
-        if (currentMembership?.Role != MemberRole.Owner)
-            throw new BusinessRuleException(ErrorCodes.Forbidden, "Only Owner can change roles.");
 
         if (member.Role == MemberRole.Owner)
             throw new BusinessRuleException(ErrorCodes.Forbidden, "Cannot change owner's role.");

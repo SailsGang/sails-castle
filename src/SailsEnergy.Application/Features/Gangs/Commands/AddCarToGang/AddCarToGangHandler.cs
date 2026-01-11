@@ -15,6 +15,7 @@ public static class AddCarToGangHandler
         AddCarToGangCommand command,
         IAppDbContext dbContext,
         ICurrentUserService currentUser,
+        IGangAuthorizationService gangAuth,
         ICacheService cache,
         IRealtimeNotificationService notificationService,
         CancellationToken ct)
@@ -23,8 +24,8 @@ public static class AddCarToGangHandler
         activity?.SetTag("gang.id", command.GangId.ToString());
         activity?.SetTag("car.id", command.CarId.ToString());
         activity?.SetTag("user.id", currentUser.UserId?.ToString());
-        var gang = await dbContext.Gangs.FindAsync([command.GangId], ct)
-            ?? throw new BusinessRuleException(ErrorCodes.NotFound, "Gang not found.");
+
+        await gangAuth.RequireMembershipAsync(command.GangId, ct);
 
         var car = await dbContext.Cars.FindAsync([command.CarId], ct)
             ?? throw new BusinessRuleException(ErrorCodes.NotFound, "Car not found.");

@@ -1,5 +1,4 @@
 using SailsEnergy.Api.Filters;
-using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Common;
 using SailsEnergy.Application.Features.Auth.Commands.Login;
 using SailsEnergy.Application.Features.Auth.Commands.Logout;

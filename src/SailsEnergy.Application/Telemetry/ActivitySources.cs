@@ -10,4 +10,5 @@ public static class ActivitySources
     public static readonly ActivitySource Members = new("SailsEnergy.Members");
     public static readonly ActivitySource Auth = new("SailsEnergy.Auth");
     public static readonly ActivitySource Periods = new("SailsEnergy.Periods");
+    public static readonly ActivitySource Tariffs = new("SailsEnergy.Tariffs");
 }

@@ -16,6 +16,7 @@ public static class DeleteGangHandler
         DeleteGangCommand command,
         IAppDbContext dbContext,
         ICurrentUserService currentUser,
+        IGangAuthorizationService gangAuth,
         ICacheService cache,
         ILogger<DeleteGangCommand> logger,
         IRealtimeNotificationService notificationService,
@@ -24,11 +25,11 @@ public static class DeleteGangHandler
         using var activity = ActivitySources.Gangs.StartActivity("DeleteGang");
         activity?.SetTag("gang.id", command.GangId.ToString());
         activity?.SetTag("user.id", currentUser.UserId?.ToString());
+
+        await gangAuth.RequireOwnerAsync(command.GangId, ct);
+
         var gang = await dbContext.Gangs.FindAsync([command.GangId], ct)
             ?? throw new BusinessRuleException(ErrorCodes.NotFound, "Gang not found.");
-
-        if (gang.OwnerId != currentUser.UserId)
-            throw new BusinessRuleException(ErrorCodes.Forbidden, "Only owner can delete the gang.");
 
         logger.LogInformation("User {UserId} deleting gang {GangId}", currentUser.UserId, command.GangId);
 

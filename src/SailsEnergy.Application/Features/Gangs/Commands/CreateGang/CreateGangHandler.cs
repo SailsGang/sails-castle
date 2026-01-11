@@ -34,6 +34,9 @@ public static class CreateGangHandler
             var member = GangMember.Create(gang.Id, userId, MemberRole.Owner, userId);
             dbContext.GangMembers.Add(member);
 
+            var period = Period.Create(gang.Id, userId);
+            dbContext.Periods.Add(period);
+
             await dbContext.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
 

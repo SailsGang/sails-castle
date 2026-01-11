@@ -1,10 +1,10 @@
-using Microsoft.EntityFrameworkCore;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Common;
 using SailsEnergy.Application.Notifications;
 using SailsEnergy.Application.Telemetry;
 using SailsEnergy.Domain.Common;
 using SailsEnergy.Domain.Exceptions;
+using SailsEnergy.Domain.ValueObjects;
 
 namespace SailsEnergy.Application.Features.Gangs.Commands.LeaveGang;
 
@@ -14,6 +14,7 @@ public static class LeaveGangHandler
         LeaveGangCommand command,
         IAppDbContext dbContext,
         ICurrentUserService currentUser,
+        IGangAuthorizationService gangAuth,
         ICacheService cache,
         IRealtimeNotificationService notificationService,
         CancellationToken ct)
@@ -21,12 +22,10 @@ public static class LeaveGangHandler
         using var activity = ActivitySources.Members.StartActivity("LeaveGang");
         activity?.SetTag("gang.id", command.GangId.ToString());
         activity?.SetTag("user.id", currentUser.UserId?.ToString());
-        var member = await dbContext.GangMembers
-            .FirstOrDefaultAsync(m => m.GangId == command.GangId && m.UserId == currentUser.UserId, ct)
-            ?? throw new BusinessRuleException(ErrorCodes.NotFound, "You are not a member of this gang.");
 
-        var gang = await dbContext.Gangs.FindAsync([command.GangId], ct);
-        if (gang?.OwnerId == currentUser.UserId)
+        var member = await gangAuth.RequireMembershipAsync(command.GangId, ct);
+
+        if (member.Role == MemberRole.Owner)
             throw new BusinessRuleException(ErrorCodes.Forbidden, "Owner cannot leave. Transfer ownership first.");
 
         member.Deactivate(currentUser.UserId!.Value);

@@ -14,7 +14,11 @@ public sealed record PeriodStartedPayload(
 
 public sealed record PeriodClosedPayload(
     Guid GangId,
+    string GangName,
     Guid PeriodId,
+    decimal TotalEnergyKwh,
+    decimal TotalCost,
+    string Currency,
     DateTimeOffset ClosedAt);
 
 public sealed record TariffChangedPayload(
