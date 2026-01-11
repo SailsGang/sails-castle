@@ -3,13 +3,13 @@ services:
     image: postgres:18
     container_name: sails-postgres
     environment:
-      POSTGRES_USER: sail
+      POSTGRES_USER: sails
       POSTGRES_PASSWORD: sails123
       POSTGRES_DB: sailsenergy
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U sails -d sailsenergy" ]
       interval: 5s
@@ -36,7 +36,7 @@ services:
       RABBITMQ_DEFAULT_USER: sails
       RABBITMQ_DEFAULT_PASS: sails123
     ports:
-      - "5672:5672"   # AMQP
+      - "5672:5672" # AMQP
       - "15672:15672" # Management UI
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
@@ -51,9 +51,10 @@ services:
     container_name: sails-seq
     environment:
       ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_ADMINPASSWORD: "sails123"
     ports:
       - "5341:5341" # Ingestion
-      - "8081:80"   # UI
+      - "8081:80" # UI
     volumes:
       - seq_data:/data
 

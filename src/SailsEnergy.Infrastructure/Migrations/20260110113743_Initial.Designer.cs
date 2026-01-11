@@ -12,7 +12,7 @@ using SailsEnergy.Infrastructure.Data;
 namespace SailsEnergy.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260109192522_Initial")]
+    [Migration("20260110113743_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -101,14 +101,24 @@ namespace SailsEnergy.Infrastructure.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<decimal>("EnergyKwh")
-                        .HasColumnType("numeric");
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
 
                     b.Property<Guid>("GangCarId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("GangId")
                         .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("LoggedByUserId")
                         .HasColumnType("uuid");
@@ -126,6 +136,14 @@ namespace SailsEnergy.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GangId");
+
+                    b.HasIndex("LoggedByUserId");
+
+                    b.HasIndex("PeriodId");
+
+                    b.HasIndex("GangId", "PeriodId");
 
                     b.ToTable("EnergyLogs");
                 });

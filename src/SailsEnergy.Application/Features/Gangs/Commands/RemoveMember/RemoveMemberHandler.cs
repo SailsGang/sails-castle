@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Common;
+using SailsEnergy.Application.Notifications;
+using SailsEnergy.Application.Telemetry;
 using SailsEnergy.Domain.Common;
 using SailsEnergy.Domain.Exceptions;
 using SailsEnergy.Domain.ValueObjects;
@@ -16,8 +18,13 @@ public static class RemoveMemberHandler
         ICurrentUserService currentUser,
         ICacheService cache,
         ILogger<RemoveMemberCommand> logger,
+        IRealtimeNotificationService notificationService,
         CancellationToken ct)
     {
+        using var activity = ActivitySources.Members.StartActivity("RemoveMember");
+        activity?.SetTag("gang.id", command.GangId.ToString());
+        activity?.SetTag("member.id", command.MemberId.ToString());
+        activity?.SetTag("user.id", currentUser.UserId?.ToString());
         var member = await dbContext.GangMembers
             .FirstOrDefaultAsync(m => m.GangId == command.GangId && m.Id == command.MemberId, ct)
             ?? throw new BusinessRuleException(ErrorCodes.NotFound, "Member not found.");
@@ -38,6 +45,18 @@ public static class RemoveMemberHandler
         var removedUserId = member.UserId;
         member.Deactivate(currentUser.UserId!.Value);
         await dbContext.SaveChangesAsync(ct);
+
+        await notificationService.NotifyGangAsync(
+            command.GangId,
+            NotificationEvents.MemberKicked,
+            new MemberLeftPayload(command.GangId, removedUserId, DateTimeOffset.UtcNow),
+            ct);
+
+        await notificationService.SendToUserAsync(
+            removedUserId,
+            NotificationEvents.MemberKicked,
+            new { GangId = command.GangId },
+            ct);
 
         await cache.RemoveAsync(CacheKeys.GangMembers(command.GangId), ct);
         await cache.RemoveAsync(CacheKeys.UserGangs(removedUserId), ct);

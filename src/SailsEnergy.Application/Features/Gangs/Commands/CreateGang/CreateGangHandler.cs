@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Common;
 using SailsEnergy.Application.Features.Gangs.Responses;
+using SailsEnergy.Application.Telemetry;
 using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.ValueObjects;
 
@@ -17,7 +18,9 @@ public static class CreateGangHandler
         ILogger<CreateGangCommand> logger,
         CancellationToken ct)
     {
+        using var activity = ActivitySources.Gangs.StartActivity("CreateGang");
         var userId = currentUser.UserId!.Value;
+        activity?.SetTag("user.id", userId.ToString());
 
         logger.LogInformation("User {UserId} creating gang '{GangName}'", userId, command.Name);
 
@@ -36,6 +39,7 @@ public static class CreateGangHandler
 
             await cache.RemoveAsync(CacheKeys.UserGangs(userId), ct);
 
+            activity?.SetTag("gang.id", gang.Id.ToString());
             logger.LogInformation("Gang {GangId} created successfully", gang.Id);
 
             return new CreateGangResponse(gang.Id);

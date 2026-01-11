@@ -4,7 +4,7 @@ using SailsEnergy.Domain.Exceptions;
 
 namespace SailsEnergy.Domain.Entities;
 
-public class EnergyLog : AuditableEntity
+public class EnergyLog : SoftDeletableEntity
 {
     private static readonly TimeSpan _editWindow = TimeSpan.FromMinutes(5);
 

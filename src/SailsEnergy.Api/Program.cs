@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using SailsEnergy.Api.Endpoints;
 using SailsEnergy.Api.Extensions;
+using SailsEnergy.Api.Hubs;
 using SailsEnergy.Api.Middleware;
 using SailsEnergy.Application;
+using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Infrastructure;
+using SailsEnergy.Infrastructure.Services;
 using SailsEnergy.ServiceDefaults;
 using Scalar.AspNetCore;
 
@@ -48,6 +51,20 @@ builder.Services.AddRateLimiter(options =>
         opt.PermitLimit = 10;
         opt.QueueLimit = 0;
     });
+
+    options.AddFixedWindowLimiter("energy", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 30;
+        opt.QueueLimit = 2;
+    });
+
+    options.AddFixedWindowLimiter("api", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 100;
+        opt.QueueLimit = 0;
+    });
 });
 
 builder.Services.AddValidatorsFromAssemblyContaining<ApplicationMarker>();
@@ -62,6 +79,9 @@ builder.Services.AddOpenApi(options =>
         return Task.CompletedTask;
     });
 });
+
+builder.Services.AddSignalR();
+builder.Services.AddScoped<IRealtimeNotificationService, SignalRNotificationService<NotificationHub>>();
 
 var app = builder.Build();
 
@@ -93,6 +113,8 @@ app.MapDefaultEndpoints();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHub<NotificationHub>("/hubs/notifications");
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -113,6 +135,7 @@ app.MapAuthEndpoints();
 app.MapGangEndpoints();
 app.MapCarEndpoints();
 app.MapUserEndpoints();
+app.MapEnergyEndpoints();
 
 app.MapGet("/", () => Results.Ok(new
 {

@@ -1,5 +1,6 @@
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Features.Gangs.Responses;
+using SailsEnergy.Application.Telemetry;
 using SailsEnergy.Domain.Common;
 using SailsEnergy.Domain.Exceptions;
 
@@ -14,6 +15,9 @@ public static class UpdateGangHandler
         ICacheService cache,
         CancellationToken ct)
     {
+        using var activity = ActivitySources.Gangs.StartActivity("UpdateGang");
+        activity?.SetTag("gang.id", command.GangId.ToString());
+        activity?.SetTag("user.id", currentUser.UserId?.ToString());
         var gang = await dbContext.Gangs.FindAsync([command.GangId], ct)
             ?? throw new BusinessRuleException(ErrorCodes.NotFound, "Gang not found.");
 

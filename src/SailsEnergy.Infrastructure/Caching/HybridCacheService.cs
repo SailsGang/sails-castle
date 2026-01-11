@@ -23,6 +23,21 @@ public class HybridCacheService(HybridCache cache) : ICacheService
         await cache.SetAsync(key, value, options, cancellationToken: ct);
     }
 
+    public async Task<T?> GetOrCreateAsync<T>(
+        string key,
+        Func<Task<T?>> factory,
+        TimeSpan? expiration = null,
+        CancellationToken ct = default) where T : class
+    {
+        var cached = await GetAsync<T>(key, ct);
+        if (cached is not null)
+            return cached;
+        var value = await factory();
+        if (value is not null)
+            await SetAsync(key, value, expiration, ct);
+        return value;
+    }
+
     public async Task RemoveAsync(string key, CancellationToken ct = default) => await cache.RemoveAsync(key, ct);
 
     private static string EntityKey<T>(Guid id) => $"{typeof(T).Name.ToLower()}:{id}";

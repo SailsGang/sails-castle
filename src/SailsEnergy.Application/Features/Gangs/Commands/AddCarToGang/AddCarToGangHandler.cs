@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Common;
+using SailsEnergy.Application.Notifications;
+using SailsEnergy.Application.Telemetry;
 using SailsEnergy.Domain.Common;
 using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.Exceptions;
@@ -14,8 +16,13 @@ public static class AddCarToGangHandler
         IAppDbContext dbContext,
         ICurrentUserService currentUser,
         ICacheService cache,
+        IRealtimeNotificationService notificationService,
         CancellationToken ct)
     {
+        using var activity = ActivitySources.Cars.StartActivity("AddCarToGang");
+        activity?.SetTag("gang.id", command.GangId.ToString());
+        activity?.SetTag("car.id", command.CarId.ToString());
+        activity?.SetTag("user.id", currentUser.UserId?.ToString());
         var gang = await dbContext.Gangs.FindAsync([command.GangId], ct)
             ?? throw new BusinessRuleException(ErrorCodes.NotFound, "Gang not found.");
 
@@ -33,6 +40,19 @@ public static class AddCarToGangHandler
         var gangCar = GangCar.Create(command.GangId, command.CarId, currentUser.UserId!.Value);
         dbContext.GangCars.Add(gangCar);
         await dbContext.SaveChangesAsync(ct);
+
+        await notificationService.NotifyGangAsync(
+            command.GangId,
+            NotificationEvents.CarAddedToGang,
+            new CarAddedToGangPayload(
+                command.GangId,
+                gangCar.Id,
+                command.CarId,
+                car.Name ?? $"{car.Manufacturer} {car.Model}",
+                currentUser.UserId!.Value,
+                DateTimeOffset.UtcNow),
+            ct);
+
         await cache.RemoveAsync(CacheKeys.GangCars(command.GangId), ct);
     }
 }

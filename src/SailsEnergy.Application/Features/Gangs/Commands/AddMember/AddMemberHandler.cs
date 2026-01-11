@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Common;
+using SailsEnergy.Application.Notifications;
+using SailsEnergy.Application.Telemetry;
 using SailsEnergy.Domain.Common;
 using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.Exceptions;
@@ -17,8 +19,12 @@ public static class AddMemberHandler
         ICurrentUserService currentUser,
         ICacheService cache,
         ILogger<AddMemberCommand> logger,
+        IRealtimeNotificationService notificationService,
         CancellationToken ct)
     {
+        using var activity = ActivitySources.Members.StartActivity("AddMember");
+        activity?.SetTag("gang.id", command.GangId.ToString());
+        activity?.SetTag("user.id", currentUser.UserId?.ToString());
         var gangExists = await dbContext.Gangs.AnyAsync(g => g.Id == command.GangId, ct);
         if (!gangExists)
             throw new BusinessRuleException(ErrorCodes.NotFound, "Gang not found.");
@@ -54,9 +60,18 @@ public static class AddMemberHandler
             dbContext.GangMembers.Add(member);
         }
 
+        var userProfile = await dbContext.UserProfiles
+            .FirstOrDefaultAsync(u => u.IdentityId == command.UserId, ct);
+        var displayName = userProfile?.DisplayName ?? "Unknown";
+
         await dbContext.SaveChangesAsync(ct);
 
-        // Invalidate caches
+        await notificationService.NotifyGangAsync(
+            command.GangId,
+            NotificationEvents.MemberJoined,
+            new MemberJoinedPayload(command.GangId, command.UserId, displayName, DateTimeOffset.UtcNow),
+            ct);
+
         await cache.RemoveAsync(CacheKeys.GangMembers(command.GangId), ct);
         await cache.RemoveAsync(CacheKeys.UserGangs(command.UserId), ct);
 

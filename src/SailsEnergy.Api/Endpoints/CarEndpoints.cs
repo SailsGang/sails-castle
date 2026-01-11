@@ -17,7 +17,9 @@ public static class CarEndpoints
         var group = app.MapGroup("/api/cars")
             .WithTags("Cars")
             .RequireAuthorization()
+            .RequireRateLimiting("api")
             .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         // GET /api/cars - Get my cars
@@ -39,6 +41,7 @@ public static class CarEndpoints
         .Produces<CreateCarResponse>(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .AddEndpointFilter<ValidationFilter<CreateCarCommand>>()
+        .AddEndpointFilter<IdempotencyFilter>()
         .WithName("CreateCar")
         .WithDescription("Creates a new car for the current user.");
 

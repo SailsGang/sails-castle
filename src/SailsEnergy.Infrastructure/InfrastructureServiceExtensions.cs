@@ -87,6 +87,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IJwtService, JwtService>();
 
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IIdempotencyService, IdempotencyService>();
 
         return services;
     }

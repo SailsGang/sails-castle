@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Common;
+using SailsEnergy.Application.Notifications;
+using SailsEnergy.Application.Telemetry;
 using SailsEnergy.Domain.Common;
 using SailsEnergy.Domain.Exceptions;
 
@@ -13,8 +15,12 @@ public static class LeaveGangHandler
         IAppDbContext dbContext,
         ICurrentUserService currentUser,
         ICacheService cache,
+        IRealtimeNotificationService notificationService,
         CancellationToken ct)
     {
+        using var activity = ActivitySources.Members.StartActivity("LeaveGang");
+        activity?.SetTag("gang.id", command.GangId.ToString());
+        activity?.SetTag("user.id", currentUser.UserId?.ToString());
         var member = await dbContext.GangMembers
             .FirstOrDefaultAsync(m => m.GangId == command.GangId && m.UserId == currentUser.UserId, ct)
             ?? throw new BusinessRuleException(ErrorCodes.NotFound, "You are not a member of this gang.");
@@ -25,6 +31,12 @@ public static class LeaveGangHandler
 
         member.Deactivate(currentUser.UserId!.Value);
         await dbContext.SaveChangesAsync(ct);
+
+        await notificationService.NotifyGangAsync(
+            command.GangId,
+            NotificationEvents.MemberLeft,
+            new MemberLeftPayload(command.GangId, currentUser.UserId!.Value, DateTimeOffset.UtcNow),
+            ct);
 
         await cache.RemoveAsync(CacheKeys.GangMembers(command.GangId), ct);
         await cache.RemoveAsync(CacheKeys.UserGangs(currentUser.UserId!.Value), ct);

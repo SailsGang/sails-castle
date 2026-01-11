@@ -9,4 +9,8 @@ public interface ICacheService
     Task<T?> GetEntityAsync<T>(Guid id, CancellationToken ct = default) where T : class;
     Task SetEntityAsync<T>(Guid id, T value, CancellationToken ct = default) where T : class;
     Task InvalidateEntityAsync<T>(Guid id, CancellationToken ct = default) where T : class;
-}
+    Task<T?> GetOrCreateAsync<T>(
+        string key,
+        Func<Task<T?>> factory,
+        TimeSpan? expiration = null,
+        CancellationToken ct = default) where T : class;}

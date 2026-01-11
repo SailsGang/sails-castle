@@ -44,14 +44,17 @@ namespace SailsEnergy.Infrastructure.Migrations
                     GangCarId = table.Column<Guid>(type: "uuid", nullable: false),
                     PeriodId = table.Column<Guid>(type: "uuid", nullable: false),
                     LoggedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    EnergyKwh = table.Column<decimal>(type: "numeric", nullable: false),
+                    EnergyKwh = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false),
                     ChargingDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Notes = table.Column<string>(type: "text", nullable: true),
                     AppliedTariffId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -183,6 +186,26 @@ namespace SailsEnergy.Infrastructure.Migrations
                 name: "IX_cars_OwnerId",
                 table: "cars",
                 column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EnergyLogs_GangId",
+                table: "EnergyLogs",
+                column: "GangId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EnergyLogs_GangId_PeriodId",
+                table: "EnergyLogs",
+                columns: new[] { "GangId", "PeriodId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EnergyLogs_LoggedByUserId",
+                table: "EnergyLogs",
+                column: "LoggedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EnergyLogs_PeriodId",
+                table: "EnergyLogs",
+                column: "PeriodId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_gang_cars_CarId",

@@ -1,5 +1,7 @@
 using SailsEnergy.Api.Filters;
 using SailsEnergy.Api.Requests;
+using SailsEnergy.Application.Features.Audit.Queries.GetAuditTrail;
+using SailsEnergy.Application.Features.Audit.Responses;
 using SailsEnergy.Application.Features.Gangs.Commands.AddCarToGang;
 using SailsEnergy.Application.Features.Gangs.Commands.AddMember;
 using SailsEnergy.Application.Features.Gangs.Commands.ChangeMemberRole;
@@ -25,7 +27,9 @@ public static class GangEndpoints
         var group = app.MapGroup("/api/gangs")
             .WithTags("Gangs")
             .RequireAuthorization()
+            .RequireRateLimiting("api")
             .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         // GET /api/gangs - Get my gangs
@@ -47,6 +51,7 @@ public static class GangEndpoints
         .Produces<CreateGangResponse>(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .AddEndpointFilter<ValidationFilter<CreateGangCommand>>()
+        .AddEndpointFilter<IdempotencyFilter>()
         .WithName("CreateGang")
         .WithDescription("Creates a new gang with the current user as owner.");
 
@@ -117,6 +122,7 @@ public static class GangEndpoints
         .ProducesProblem(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status409Conflict)
         .AddEndpointFilter<ValidationFilter<AddMemberCommand>>()
+        .AddEndpointFilter<IdempotencyFilter>()
         .WithName("AddMember")
         .WithDescription("Adds a user as a member to the gang. Requires Owner or Admin role.");
 
@@ -212,5 +218,26 @@ public static class GangEndpoints
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithName("RemoveCarFromGang")
         .WithDescription("Removes a car from the gang. Owner, Admin, or car owner can remove.");
+
+        // GET /api/gangs/{gangId}/audit - Get audit trail
+        group.MapGet("/api/gangs/{gangId:guid}/audit", async (
+                Guid gangId,
+                DateTimeOffset? from,
+                DateTimeOffset? to,
+                int page,
+                int pageSize,
+                IMessageBus bus,
+                CancellationToken ct) =>
+            {
+                var result = await bus.InvokeAsync<AuditTrailResponse>(
+                    new GetAuditTrailQuery(gangId, from, to, page > 0 ? page : 1, pageSize > 0 ? pageSize : 50), ct);
+                return Results.Ok(result);
+            })
+            .WithTags("Audit")
+            .RequireAuthorization()
+            .Produces<AuditTrailResponse>()
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .WithName("GetAuditTrail")
+            .WithDescription("Returns audit trail for a gang. Admins only.");
     }
 }

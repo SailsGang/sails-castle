@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Features.Cars.Responses;
+using SailsEnergy.Application.Telemetry;
 using SailsEnergy.Domain.Common;
 using SailsEnergy.Domain.Exceptions;
 
@@ -16,6 +17,9 @@ public static class DeleteCarHandler
         ILogger<DeleteCarCommand> logger,
         CancellationToken ct)
     {
+        using var activity = ActivitySources.Cars.StartActivity("DeleteCar");
+        activity?.SetTag("car.id", command.CarId.ToString());
+        activity?.SetTag("user.id", currentUser.UserId?.ToString());
         var car = await dbContext.Cars.FindAsync([command.CarId], ct)
                   ?? throw new BusinessRuleException(ErrorCodes.NotFound, "Car not found.");
 
