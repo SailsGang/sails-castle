@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sailsenergy-api
+  namespace: sailsenergy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sailsenergy-api
+  template:
+    metadata:
+      labels:
+        app: sailsenergy-api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: sailsenergy-api
+      #imagePullSecrets:
+      #- name: ghcr-secret
+      containers:
+        - name: api
+          #image: ghcr.io/sailsgang/sails-castle:latest
+          #imagePullPolicy: Always
+          image: sailsenergy-api:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: sailsenergy-config
+                  key: ASPNETCORE_ENVIRONMENT
+            - name: ConnectionStrings__sailsenergy
+              value: "Host=postgres;Port=5432;Database=sailsenergy;Username=sails;Password=sails123"
+            - name: ConnectionStrings__identity
+              value: "Host=postgres;Port=5432;Database=sailsenergy_identity;Username=sails;Password=sails123"
+            - name: ConnectionStrings__redis
+              value: "redis:6379"
+            - name: ConnectionStrings__rabbitmq
+              value: "amqp://sails:sails123@rabbitmq:5672"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sailsenergy-secrets
+                  key: POSTGRES_PASSWORD
+            - name: Jwt__Secret
+              valueFrom:
+                secretKeyRef:
+                  name: sailsenergy-secrets
+                  key: JWT_SECRET
+            - name: Logging__LogLevel__Default
+              value: "Warning"
+            - name: Logging__LogLevel__Npgsql
+              value: "Error"
+            - name: Logging__LogLevel__Wolverine
+              value: "Error"
+            - name: Logging__LogLevel__Marten
+              value: "Error"
+          envFrom:
+            - configMapRef:
+                name: sailsenergy-config
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sailsenergy-api
+  namespace: sailsenergy
+spec:
+  selector:
+    app: sailsenergy-api
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30080
+  type: NodePort

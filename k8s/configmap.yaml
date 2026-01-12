@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sailsenergy-config
+  namespace: sailsenergy
+data:
+  ASPNETCORE_ENVIRONMENT: "Development"
+  Jwt__Issuer: "SailsEnergy"
+  Jwt__Audience: "SailsEnergy"
+  Jwt__AccessTokenExpirationMinutes: "60"
+  Jwt__RefreshTokenExpirationDays: "7"
+  Logging__LogLevel__Default: "Warning"
+  Logging__LogLevel__Npgsql: "Error"
+  Logging__LogLevel__Npgsql.Command: "Error"
+  Logging__LogLevel__Wolverine: "Error"
+  Logging__LogLevel__Marten: "Error"
+  Logging__LogLevel__Microsoft: "Warning"
+  Logging__LogLevel__Microsoft.Hosting.Lifetime: "Information"
