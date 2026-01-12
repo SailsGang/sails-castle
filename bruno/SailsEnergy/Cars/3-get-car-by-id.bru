@@ -1,0 +1,15 @@
+meta {
+  name: 3. Get Car By ID
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/cars/{{carId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

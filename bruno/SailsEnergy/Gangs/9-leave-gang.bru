@@ -1,0 +1,14 @@
+meta {
+  name: 9. Leave Gang
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/leave
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

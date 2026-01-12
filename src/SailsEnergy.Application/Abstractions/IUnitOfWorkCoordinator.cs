@@ -36,6 +36,11 @@ public interface IUnitOfWorkContext
     Task SaveMartenChangesAsync(CancellationToken ct = default);
 
     /// <summary>
+    /// Stores a document in Marten.
+    /// </summary>
+    void StoreDocument<T>(T document) where T : notnull;
+
+    /// <summary>
     /// Registers a compensation action to be executed if the operation fails.
     /// </summary>
     void RegisterCompensation(Func<CancellationToken, Task> compensation);

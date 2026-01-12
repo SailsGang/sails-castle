@@ -1,0 +1,14 @@
+meta {
+  name: 5. Get Gang Members
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/members
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

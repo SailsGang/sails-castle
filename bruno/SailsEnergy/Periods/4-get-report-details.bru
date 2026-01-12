@@ -1,0 +1,15 @@
+meta {
+  name: 4. Get Report Details
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/period/reports/{{reportId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

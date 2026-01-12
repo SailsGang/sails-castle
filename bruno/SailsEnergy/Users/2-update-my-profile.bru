@@ -1,0 +1,23 @@
+meta {
+  name: 2. Update My Profile
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/api/me
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "displayName": "Updated Name",
+    "firstName": "Updated",
+    "lastName": "User"
+  }
+}

@@ -1,0 +1,14 @@
+meta {
+  name: 2. Get Current Tariff
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/tariff
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

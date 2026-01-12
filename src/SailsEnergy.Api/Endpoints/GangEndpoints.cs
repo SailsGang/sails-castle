@@ -1,5 +1,6 @@
 using SailsEnergy.Api.Filters;
 using SailsEnergy.Api.Requests;
+using SailsEnergy.Application.Common;
 using SailsEnergy.Application.Features.Audit.Queries.GetAuditTrail;
 using SailsEnergy.Application.Features.Audit.Responses;
 using SailsEnergy.Application.Features.Gangs.Commands.AddCarToGang;
@@ -96,16 +97,16 @@ public static class GangEndpoints
         .WithDescription("Soft deletes a gang. Only the owner can delete.");
 
         // GET /api/gangs/{id}/members - Get gang members
-        group.MapGet("/{id:guid}/members", async (Guid id, IMessageBus bus, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/members", async (Guid id, int page, int pageSize, IMessageBus bus, CancellationToken ct) =>
         {
-            var result = await bus.InvokeAsync<IReadOnlyList<GangMemberResponse>>(
-                new GetGangMembersQuery(id), ct);
+            var result = await bus.InvokeAsync<PaginatedResponse<GangMemberResponse>>(
+                new GetGangMembersQuery(id, page > 0 ? page : 1, pageSize > 0 ? pageSize : 50), ct);
             return Results.Ok(result);
         })
-        .Produces<IReadOnlyList<GangMemberResponse>>()
+        .Produces<PaginatedResponse<GangMemberResponse>>()
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithName("GetGangMembers")
-        .WithDescription("Returns all active members of a gang.");
+        .WithDescription("Returns paginated active members of a gang.");
 
         // POST /api/gangs/{id}/members - Add member
         group.MapPost("/{id:guid}/members", async (
@@ -174,16 +175,16 @@ public static class GangEndpoints
         .WithDescription("Current user leaves the gang. Owner cannot leave without transferring ownership.");
 
         // GET /api/gangs/{id}/cars - Get gang cars
-        group.MapGet("/{id:guid}/cars", async (Guid id, IMessageBus bus, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/cars", async (Guid id, int page, int pageSize, IMessageBus bus, CancellationToken ct) =>
         {
-            var result = await bus.InvokeAsync<IReadOnlyList<GangCarResponse>>(
-                new GetGangCarsQuery(id), ct);
+            var result = await bus.InvokeAsync<PaginatedResponse<GangCarResponse>>(
+                new GetGangCarsQuery(id, page > 0 ? page : 1, pageSize > 0 ? pageSize : 50), ct);
             return Results.Ok(result);
         })
-        .Produces<IReadOnlyList<GangCarResponse>>()
+        .Produces<PaginatedResponse<GangCarResponse>>()
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithName("GetGangCars")
-        .WithDescription("Returns all active cars assigned to the gang.");
+        .WithDescription("Returns paginated active cars assigned to the gang.");
 
         // POST /api/gangs/{id}/cars - Add car to gang
         group.MapPost("/{id:guid}/cars", async (
@@ -219,9 +220,9 @@ public static class GangEndpoints
         .WithName("RemoveCarFromGang")
         .WithDescription("Removes a car from the gang. Owner, Admin, or car owner can remove.");
 
-        // GET /api/gangs/{gangId}/audit - Get audit trail
-        group.MapGet("/api/gangs/{gangId:guid}/audit", async (
-                Guid gangId,
+        // GET /api/gangs/{id}/audit - Get audit trail
+        group.MapGet("/{id:guid}/audit", async (
+                Guid id,
                 DateTimeOffset? from,
                 DateTimeOffset? to,
                 int page,
@@ -230,7 +231,7 @@ public static class GangEndpoints
                 CancellationToken ct) =>
             {
                 var result = await bus.InvokeAsync<AuditTrailResponse>(
-                    new GetAuditTrailQuery(gangId, from, to, page > 0 ? page : 1, pageSize > 0 ? pageSize : 50), ct);
+                    new GetAuditTrailQuery(id, from, to, page > 0 ? page : 1, pageSize > 0 ? pageSize : 50), ct);
                 return Results.Ok(result);
             })
             .WithTags("Audit")

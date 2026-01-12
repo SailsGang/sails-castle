@@ -1,0 +1,22 @@
+meta {
+  name: 1. Set Tariff
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/tariff
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "pricePerKwh": 8.50,
+    "currency": "UAH"
+  }
+}

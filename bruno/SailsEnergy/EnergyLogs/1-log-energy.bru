@@ -1,0 +1,31 @@
+meta {
+  name: 1. Log Energy
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/energy
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "gangId": "{{gangId}}",
+    "gangCarId": "{{gangCarId}}",
+    "energyKwh": 45.5,
+    "chargingDate": "2024-01-10T14:00:00Z",
+    "notes": "Charged at home"
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("energyLogId", res.body.logId);
+  }
+}

@@ -1,0 +1,25 @@
+meta {
+  name: 4. Update Car
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/cars/{{carId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "My Updated Tesla",
+    "model": "Model 3 LR",
+    "manufacturer": "Tesla",
+    "licensePlate": "AA1234BB",
+    "batteryCapacityKwh": 82.0
+  }
+}

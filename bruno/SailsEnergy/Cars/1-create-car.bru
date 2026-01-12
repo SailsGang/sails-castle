@@ -1,0 +1,31 @@
+meta {
+  name: 1. Create Car
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/cars
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "manufacturer": "Tesla",
+    "model": "Model 3",
+    "year": 2023,
+    "batteryCapacityKwh": 75.0,
+    "name": "My Tesla"
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("carId", res.body.id);
+  }
+}

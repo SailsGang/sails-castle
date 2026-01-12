@@ -1,0 +1,21 @@
+meta {
+  name: 4. Add Member
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/members
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "userId": "{{userBId}}"
+  }
+}

@@ -1,0 +1,14 @@
+meta {
+  name: 3. Get Gang Details
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/gangs/{{gangId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

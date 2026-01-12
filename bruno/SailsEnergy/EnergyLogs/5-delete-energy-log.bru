@@ -1,0 +1,14 @@
+meta {
+  name: 5. Delete Energy Log
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/energy/{{energyLogId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

@@ -1,0 +1,14 @@
+meta {
+  name: 14. Get Audit Trail
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/audit?page=1&pageSize=10
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

@@ -7,20 +7,14 @@ namespace SailsEnergy.Application.Features.Gangs.Queries.GetGangCars;
 
 public static class GetGangCarsHandler
 {
-    public static async Task<List<GangCarResponse>> HandleAsync(
+    public static async Task<PaginatedResponse<GangCarResponse>> HandleAsync(
         GetGangCarsQuery query,
         IAppDbContext dbContext,
-        ICacheService cache,
         CancellationToken ct)
     {
-        var cached = await cache.GetAsync<List<GangCarResponse>>(CacheKeys.GangCars(query.GangId), ct);
-        if (cached is not null)
-            return cached;
-
-        var result = await (
-            from gc in dbContext.GangCars.AsNoTracking()
+        var baseQuery = from gc in dbContext.GangCars.AsNoTracking()
             join c in dbContext.Cars.AsNoTracking() on gc.CarId equals c.Id
-            where gc.GangId == query.GangId
+            where gc.GangId == query.GangId && gc.IsActive
             select new GangCarResponse(
                 gc.Id,
                 gc.CarId,
@@ -28,11 +22,15 @@ public static class GetGangCarsHandler
                 c.LicensePlate,
                 c.BatteryCapacityKwh ?? 0,
                 c.OwnerId,
-                gc.CreatedAt)
-        ).ToListAsync(ct);
+                gc.CreatedAt);
 
-        await cache.SetAsync(CacheKeys.GangCars(query.GangId), result, ct: ct);
+        var totalCount = await baseQuery.CountAsync(ct);
+        var items = await baseQuery
+            .OrderBy(gc => gc.AddedAt)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync(ct);
 
-        return result;
+        return new PaginatedResponse<GangCarResponse>(items, totalCount, query.Page, query.PageSize);
     }
 }

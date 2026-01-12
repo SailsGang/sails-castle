@@ -1,0 +1,14 @@
+meta {
+  name: 2. Get My Energy Logs
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/energy?page=1&pageSize=10
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

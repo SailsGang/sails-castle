@@ -37,6 +37,9 @@ public static class CreateGangHandler
             var period = Period.Create(gang.Id, userId);
             dbContext.Periods.Add(period);
 
+            var defaultTariff = Tariff.Create(gang.Id, 0m, "UAH", userId);
+            dbContext.Tariffs.Add(defaultTariff);
+
             await dbContext.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
 

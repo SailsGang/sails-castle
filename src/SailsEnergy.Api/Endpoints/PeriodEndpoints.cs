@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using SailsEnergy.Api.Filters;
 using SailsEnergy.Application.Common;
 using SailsEnergy.Application.Features.Periods.Commands.ClosePeriod;
+using SailsEnergy.Application.Features.Periods.Documents;
 using SailsEnergy.Application.Features.Periods.Queries.GetCurrentPeriod;
 using SailsEnergy.Application.Features.Periods.Queries.GetPeriodReports;
+using SailsEnergy.Application.Features.Periods.Queries.GetReportById;
 using SailsEnergy.Application.Features.Periods.Responses;
 using Wolverine;
 
@@ -62,5 +64,20 @@ public static class PeriodEndpoints
         .WithSummary("Get historical period reports for a gang")
         .Produces<PaginatedResponse<PeriodReportSummary>>()
         .ProducesProblem(StatusCodes.Status403Forbidden);
+
+        group.MapGet("/reports/{reportId:guid}", async (
+            [FromRoute] Guid gangId,
+            [FromRoute] Guid reportId,
+            IMessageBus bus) =>
+        {
+            var result = await bus.InvokeAsync<PeriodReport>(
+                new GetReportByIdQuery(gangId, reportId));
+            return Results.Ok(result);
+        })
+        .WithName("GetReportById")
+        .WithSummary("Get detailed period report with member and car breakdowns")
+        .Produces<PeriodReport>()
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status404NotFound);
     }
 }

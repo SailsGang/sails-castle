@@ -1,0 +1,14 @@
+meta {
+  name: 7. Remove Member
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/members/{{memberId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

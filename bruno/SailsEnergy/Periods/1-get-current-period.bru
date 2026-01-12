@@ -1,0 +1,14 @@
+meta {
+  name: 1. Get Current Period
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/period
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

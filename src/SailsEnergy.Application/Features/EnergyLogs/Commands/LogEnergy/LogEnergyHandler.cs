@@ -1,4 +1,4 @@
-using Marten;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Features.EnergyLogs.Responses;

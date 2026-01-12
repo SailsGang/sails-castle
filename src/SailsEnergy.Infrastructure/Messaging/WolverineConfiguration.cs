@@ -1,10 +1,13 @@
+using Marten;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SailsEnergy.Application;
 using SailsEnergy.Application.Abstractions;
+using SailsEnergy.Application.Features.Periods.Documents;
 using SailsEnergy.Infrastructure.Data;
 using Wolverine;
+using Wolverine.Marten;
 using Wolverine.RabbitMQ;
 
 namespace SailsEnergy.Infrastructure.Messaging;
@@ -21,6 +24,15 @@ public static class WolverineConfiguration
 
         builder.Services.AddScoped<IAppDbContext>(provider =>
             provider.GetRequiredService<AppDbContext>());
+
+        builder.Services.AddMarten(options =>
+        {
+            options.Connection(dbConnectionString);
+
+            options.Schema.For<PeriodReport>();
+        })
+        .UseLightweightSessions()
+        .IntegrateWithWolverine();
 
         builder.UseWolverine(options =>
         {

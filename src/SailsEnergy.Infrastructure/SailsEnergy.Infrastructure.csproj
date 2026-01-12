@@ -41,4 +41,8 @@
     <ProjectReference Include="..\SailsEnergy.Application\SailsEnergy.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>

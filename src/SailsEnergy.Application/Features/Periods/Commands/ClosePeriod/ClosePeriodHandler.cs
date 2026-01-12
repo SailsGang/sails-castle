@@ -9,7 +9,6 @@ using SailsEnergy.Domain.Common;
 using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.Exceptions;
 using SailsEnergy.Domain.ValueObjects;
-using IDocumentSession = Marten.IDocumentSession;
 
 namespace SailsEnergy.Application.Features.Periods.Commands.ClosePeriod;
 
@@ -18,7 +17,6 @@ public static class ClosePeriodHandler
     public static async Task<ClosePeriodResponse> HandleAsync(
         ClosePeriodCommand command,
         IAppDbContext dbContext,
-        IDocumentSession documentSession,
         ICurrentUserService currentUser,
         IGangAuthorizationService gangAuth,
         IPeriodReportService reportService,
@@ -67,7 +65,7 @@ public static class ClosePeriodHandler
             var period = Period.Create(command.GangId, userId);
             dbContext.Periods.Add(period);
 
-            documentSession.Store(report);
+            context.StoreDocument(report);
 
             context.RegisterCompensation(_ =>
             {

@@ -7,32 +7,30 @@ namespace SailsEnergy.Application.Features.Gangs.Queries.GetGangMembers;
 
 public static class GetGangMembersHandler
 {
-    public static async Task<List<GangMemberResponse>> HandleAsync(
+    public static async Task<PaginatedResponse<GangMemberResponse>> HandleAsync(
         GetGangMembersQuery query,
         IAppDbContext dbContext,
-        ICacheService cache,
         CancellationToken ct)
     {
-        var cached = await cache.GetAsync<List<GangMemberResponse>>(CacheKeys.GangMembers(query.GangId), ct);
-        if (cached is not null)
-            return cached;
-
-        var result = await (
-            from m in dbContext.GangMembers.AsNoTracking()
+        var baseQuery = from m in dbContext.GangMembers.AsNoTracking()
             join p in dbContext.UserProfiles.AsNoTracking() on m.UserId equals p.IdentityId into profiles
             from profile in profiles.DefaultIfEmpty()
-            where m.GangId == query.GangId
+            where m.GangId == query.GangId && m.IsActive
             select new GangMemberResponse(
                 m.Id,
                 m.UserId,
                 profile != null ? profile.DisplayName : "Unknown",
                 "",
                 m.Role.ToString(),
-                m.CreatedAt)
-        ).ToListAsync(ct);
+                m.CreatedAt);
 
-        await cache.SetAsync(CacheKeys.GangMembers(query.GangId), result, ct: ct);
+        var totalCount = await baseQuery.CountAsync(ct);
+        var items = await baseQuery
+            .OrderBy(m => m.JoinedAt)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync(ct);
 
-        return result;
+        return new PaginatedResponse<GangMemberResponse>(items, totalCount, query.Page, query.PageSize);
     }
 }

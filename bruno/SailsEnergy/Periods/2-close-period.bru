@@ -1,0 +1,14 @@
+meta {
+  name: 2. Close Period
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/period/close
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

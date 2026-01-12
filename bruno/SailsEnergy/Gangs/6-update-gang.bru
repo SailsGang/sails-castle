@@ -1,0 +1,22 @@
+meta {
+  name: 6. Update Gang
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/gangs/{{gangId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Updated Gang Name",
+    "description": "Updated description"
+  }
+}

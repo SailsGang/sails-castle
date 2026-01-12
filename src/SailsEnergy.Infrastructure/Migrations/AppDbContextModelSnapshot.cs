@@ -296,8 +296,9 @@ namespace SailsEnergy.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("StartedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -307,7 +308,11 @@ namespace SailsEnergy.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Periods");
+                    b.HasIndex("GangId");
+
+                    b.HasIndex("GangId", "Status");
+
+                    b.ToTable("Periods", (string)null);
                 });
 
             modelBuilder.Entity("SailsEnergy.Domain.Entities.Tariff", b =>
@@ -324,7 +329,8 @@ namespace SailsEnergy.Infrastructure.Migrations
 
                     b.Property<string>("Currency")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
                     b.Property<DateTimeOffset>("EffectiveFrom")
                         .HasColumnType("timestamp with time zone");
@@ -333,7 +339,8 @@ namespace SailsEnergy.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("PricePerKwh")
-                        .HasColumnType("numeric");
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
 
                     b.Property<Guid>("SetByUserId")
                         .HasColumnType("uuid");
@@ -346,7 +353,11 @@ namespace SailsEnergy.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tariffs");
+                    b.HasIndex("GangId");
+
+                    b.HasIndex("GangId", "EffectiveFrom");
+
+                    b.ToTable("Tariffs", (string)null);
                 });
 
             modelBuilder.Entity("SailsEnergy.Domain.Entities.UserProfile", b =>

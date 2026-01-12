@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SailsEnergy.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -127,7 +127,7 @@ namespace SailsEnergy.Infrastructure.Migrations
                     GangId = table.Column<Guid>(type: "uuid", nullable: false),
                     StartedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     ClosedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    Status = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
                     ClosedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
@@ -145,8 +145,8 @@ namespace SailsEnergy.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     GangId = table.Column<Guid>(type: "uuid", nullable: false),
-                    PricePerKwh = table.Column<decimal>(type: "numeric", nullable: false),
-                    Currency = table.Column<string>(type: "text", nullable: false),
+                    PricePerKwh = table.Column<decimal>(type: "numeric(18,4)", precision: 18, scale: 4, nullable: false),
+                    Currency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     EffectiveFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     SetByUserId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -241,6 +241,26 @@ namespace SailsEnergy.Infrastructure.Migrations
                 name: "IX_gangs_OwnerId",
                 table: "gangs",
                 column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Periods_GangId",
+                table: "Periods",
+                column: "GangId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Periods_GangId_Status",
+                table: "Periods",
+                columns: new[] { "GangId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tariffs_GangId",
+                table: "Tariffs",
+                column: "GangId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tariffs_GangId_EffectiveFrom",
+                table: "Tariffs",
+                columns: new[] { "GangId", "EffectiveFrom" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_user_profiles_IdentityId",

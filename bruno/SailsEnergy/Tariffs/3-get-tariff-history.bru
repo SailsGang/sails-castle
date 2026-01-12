@@ -1,0 +1,14 @@
+meta {
+  name: 3. Get Tariff History
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/tariff/history?page=1&pageSize=10
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

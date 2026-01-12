@@ -10,7 +10,7 @@ namespace SailsEnergy.Infrastructure.Services;
 /// </summary>
 public class UnitOfWorkCoordinator(
     AppDbContext dbContext,
-    IDocumentSession documentSession,
+    IDocumentStore documentStore,
     ICacheService cache,
     ILogger<UnitOfWorkCoordinator> logger)
     : IUnitOfWorkCoordinator
@@ -25,7 +25,8 @@ public class UnitOfWorkCoordinator(
         var lockAcquired = await TryAcquireLockAsync(lockKey, ct);
         if (!lockAcquired) throw new InvalidOperationException("Unable to acquire lock for this operation. Please try again.");
 
-        var context = new UnitOfWorkContext(dbContext, documentSession);
+        await using var session = documentStore.LightweightSession();
+        var context = new UnitOfWorkContext(dbContext, session);
 
         try
         {
@@ -74,6 +75,8 @@ internal class UnitOfWorkContext(AppDbContext dbContext, IDocumentSession docume
     public async Task SaveEfChangesAsync(CancellationToken ct = default) => await dbContext.SaveChangesAsync(ct);
 
     public async Task SaveMartenChangesAsync(CancellationToken ct = default) => await documentSession.SaveChangesAsync(ct);
+
+    public void StoreDocument<T>(T document) where T : notnull => documentSession.Store(document);
 
     public void RegisterCompensation(Func<CancellationToken, Task> compensation) => _compensations.Add(compensation);
 

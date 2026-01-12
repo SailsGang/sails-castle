@@ -1,0 +1,21 @@
+meta {
+  name: 8. Change Member Role
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/members/{{memberId}}/role
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "role": "Admin"
+  }
+}

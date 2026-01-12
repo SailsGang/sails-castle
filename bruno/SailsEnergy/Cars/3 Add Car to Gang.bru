@@ -1,0 +1,21 @@
+meta {
+  name: 3 Add Car to Gang
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/gangs/{{gangId}}/cars
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "carId": "{{carId}}"
+  }
+}
