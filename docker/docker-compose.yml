@@ -1,17 +1,49 @@
 services:
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: sails-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__sailsenergy=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__identity=Host=postgres;Port=5432;Database=${POSTGRES_DB}_identity;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__redis=redis:6379
+      - ConnectionStrings__rabbitmq=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=SailsEnergy
+      - Jwt__Audience=SailsEnergy
+      - Jwt__AccessTokenExpirationMinutes=60
+      - Jwt__RefreshTokenExpirationDays=7
+    ports:
+      - "5209:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
   postgres:
     image: postgres:18
     container_name: sails-postgres
     environment:
-      POSTGRES_USER: sails
-      POSTGRES_PASSWORD: sails123
-      POSTGRES_DB: sailsenergy
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U sails -d sailsenergy" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -33,11 +65,11 @@ services:
     image: rabbitmq:4-management-alpine
     container_name: sails-rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: sails
-      RABBITMQ_DEFAULT_PASS: sails123
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
-      - "5672:5672" # AMQP
-      - "15672:15672" # Management UI
+      - "5672:5672"
+      - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
@@ -51,10 +83,10 @@ services:
     container_name: sails-seq
     environment:
       ACCEPT_EULA: "Y"
-      SEQ_FIRSTRUN_ADMINPASSWORD: "sails123"
+      SEQ_FIRSTRUN_ADMINPASSWORD: ${SEQ_ADMIN_PASSWORD}
     ports:
-      - "5341:5341" # Ingestion
-      - "8081:80" # UI
+      - "5341:5341"
+      - "8081:80"
     volumes:
       - seq_data:/data
 

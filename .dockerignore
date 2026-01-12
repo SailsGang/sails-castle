@@ -1,0 +1,29 @@
+# Ignore build artifacts
+**/bin/
+**/obj/
+**/out/
+
+# Ignore IDE folders
+.idea/
+.vs/
+.vscode/
+
+# Ignore test results
+**/TestResults/
+
+# Ignore git
+.git/
+.gitignore
+
+# Ignore docs
+*.md
+LICENSE
+
+# Ignore local settings
+**/appsettings.*.json
+!**/appsettings.json
+!**/appsettings.Docker.json
+
+# Ignore artifacts
+.gemini/
+bruno/
