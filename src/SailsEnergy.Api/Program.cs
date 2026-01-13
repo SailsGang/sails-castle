@@ -11,6 +11,7 @@ using SailsEnergy.Infrastructure;
 using SailsEnergy.Infrastructure.Services;
 using SailsEnergy.ServiceDefaults;
 using Scalar.AspNetCore;
+using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,15 @@ builder.AddMessaging();
 // JWT Authentication
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
+
+// API Versioning - header-based with v1 default
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = new HeaderApiVersionReader("api-version");
+});
 
 builder.Services.AddExceptionHandler<SailsEnergy.Api.Handlers.GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -92,6 +102,12 @@ builder.Services.AddOpenApi(options =>
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IRealtimeNotificationService, SignalRNotificationService<NotificationHub>>();
 
+// Response compression
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
+
 var app = builder.Build();
 
 app.UseRateLimiter();
@@ -113,6 +129,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandler();
+
+// HTTPS and HSTS for production
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+    app.UseHsts();
+}
+
+app.UseResponseCompression();
 app.UseCors("Frontend");
 app.UseSecurityHeaders();
 app.UseRequestLogging();
