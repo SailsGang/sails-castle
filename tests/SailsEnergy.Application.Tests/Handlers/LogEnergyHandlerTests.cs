@@ -30,10 +30,10 @@ public class LogEnergyHandlerTests
         // Arrange - Create full setup: Gang, Member, Car, GangCar, Period, Tariff
         var (gang, gangCar, period, tariff) = await SetupGangWithCarAsync();
 
-        _cache.GetOrCreateAsync<Tariff?>(
+        _cache.GetOrCreateAsync(
             Arg.Any<string>(),
-            Arg.Any<Func<Task<Tariff?>>>(),
-            Arg.Any<TimeSpan>(),
+            Arg.Any<Func<Task<Tariff>>>(),
+            Arg.Any<TimeSpan?>(),
             Arg.Any<CancellationToken>())
             .Returns(tariff);
 
