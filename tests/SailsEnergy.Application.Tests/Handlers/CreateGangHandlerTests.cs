@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Features.Gangs.Commands.CreateGang;
-using SailsEnergy.Application.Tests;
 using SailsEnergy.Domain.ValueObjects;
 
 namespace SailsEnergy.Application.Tests.Handlers;

@@ -2,9 +2,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Features.Tariffs.Commands.SetTariff;
-using SailsEnergy.Application.Tests;
 using SailsEnergy.Domain.Entities;
-using SailsEnergy.Domain.ValueObjects;
 
 namespace SailsEnergy.Application.Tests.Handlers;
 

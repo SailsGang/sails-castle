@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Features.Gangs.Commands.DeleteGang;
-using SailsEnergy.Application.Tests;
 using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.Exceptions;
 using SailsEnergy.Domain.ValueObjects;

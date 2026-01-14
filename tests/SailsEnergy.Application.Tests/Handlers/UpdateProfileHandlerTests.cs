@@ -1,7 +1,6 @@
 using NSubstitute;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Features.Users.Commands.UpdateProfile;
-using SailsEnergy.Application.Tests;
 using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.Exceptions;
 

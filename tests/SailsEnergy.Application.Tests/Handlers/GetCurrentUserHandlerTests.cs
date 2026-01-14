@@ -3,7 +3,6 @@ using NSubstitute;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Features.Users.Queries.GetCurrentUser;
 using SailsEnergy.Application.Features.Users.Responses;
-using SailsEnergy.Application.Tests;
 using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.Exceptions;
 

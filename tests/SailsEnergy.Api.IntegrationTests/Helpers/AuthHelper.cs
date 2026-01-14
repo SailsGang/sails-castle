@@ -1,6 +1,5 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using SailsEnergy.Api.IntegrationTests.Fixtures;
 using SailsEnergy.Application.Features.Auth.Commands.Register;
 
 namespace SailsEnergy.Api.IntegrationTests.Helpers;

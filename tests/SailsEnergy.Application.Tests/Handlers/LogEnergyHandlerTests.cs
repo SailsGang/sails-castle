@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Features.EnergyLogs.Commands.LogEnergy;
-using SailsEnergy.Application.Tests;
 using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.Exceptions;
 using SailsEnergy.Domain.ValueObjects;
@@ -32,7 +31,7 @@ public class LogEnergyHandlerTests
 
         _cache.GetOrCreateAsync(
             Arg.Any<string>(),
-            Arg.Any<Func<Task<Tariff>>>(),
+            Arg.Any<Func<Task<Tariff?>>>(),
             Arg.Any<TimeSpan?>(),
             Arg.Any<CancellationToken>())
             .Returns(tariff);

@@ -2,8 +2,6 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Features.Cars.Commands.CreateCar;
-using SailsEnergy.Application.Tests;
-using SailsEnergy.Domain.Entities;
 
 namespace SailsEnergy.Application.Tests.Handlers;
 
