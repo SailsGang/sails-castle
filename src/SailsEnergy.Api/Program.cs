@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using FluentValidation;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,6 @@ using SailsEnergy.Infrastructure;
 using SailsEnergy.Infrastructure.Services;
 using SailsEnergy.ServiceDefaults;
 using Scalar.AspNetCore;
-using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,28 +51,33 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Rate limiting for auth endpoints
+// Rate limiting for auth endpoints (configurable via RateLimiting:* settings)
+var authPermitLimit = builder.Configuration.GetValue("RateLimiting:Auth:PermitLimit", 10);
+var apiPermitLimit = builder.Configuration.GetValue("RateLimiting:Api:PermitLimit", 100);
+var energyPermitLimit = builder.Configuration.GetValue("RateLimiting:Energy:PermitLimit", 30);
+var periodClosePermitLimit = builder.Configuration.GetValue("RateLimiting:PeriodClose:PermitLimit", 2);
+
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.AddFixedWindowLimiter("auth", opt =>
     {
         opt.Window = TimeSpan.FromMinutes(1);
-        opt.PermitLimit = 10;
+        opt.PermitLimit = authPermitLimit;
         opt.QueueLimit = 0;
     });
 
     options.AddFixedWindowLimiter("energy", opt =>
     {
         opt.Window = TimeSpan.FromMinutes(1);
-        opt.PermitLimit = 30;
+        opt.PermitLimit = energyPermitLimit;
         opt.QueueLimit = 2;
     });
 
     options.AddFixedWindowLimiter("api", opt =>
     {
         opt.Window = TimeSpan.FromMinutes(1);
-        opt.PermitLimit = 100;
+        opt.PermitLimit = apiPermitLimit;
         opt.QueueLimit = 0;
     });
 
@@ -80,7 +85,7 @@ builder.Services.AddRateLimiter(options =>
     options.AddSlidingWindowLimiter("period-close", opt =>
     {
         opt.Window = TimeSpan.FromHours(1);
-        opt.PermitLimit = 2;
+        opt.PermitLimit = periodClosePermitLimit;
         opt.SegmentsPerWindow = 4;
         opt.QueueLimit = 0;
     });

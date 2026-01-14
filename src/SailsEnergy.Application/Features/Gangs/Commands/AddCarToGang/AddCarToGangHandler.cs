@@ -11,7 +11,7 @@ namespace SailsEnergy.Application.Features.Gangs.Commands.AddCarToGang;
 
 public static class AddCarToGangHandler
 {
-    public static async Task HandleAsync(
+    public static async Task<Guid> HandleAsync(
         AddCarToGangCommand command,
         IAppDbContext dbContext,
         ICurrentUserService currentUser,
@@ -55,5 +55,7 @@ public static class AddCarToGangHandler
             ct);
 
         await cache.RemoveAsync(CacheKeys.GangCars(command.GangId), ct);
+
+        return gangCar.Id;
     }
 }

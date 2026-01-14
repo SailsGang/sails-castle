@@ -193,8 +193,8 @@ public static class GangEndpoints
             IMessageBus bus,
             CancellationToken ct) =>
         {
-            await bus.InvokeAsync(new AddCarToGangCommand(id, request.CarId), ct);
-            return Results.Created($"/api/gangs/{id}/cars", null);
+            var gangCarId = await bus.InvokeAsync<Guid>(new AddCarToGangCommand(id, request.CarId), ct);
+            return Results.Created($"/api/gangs/{id}/cars/{gangCarId}", new AddCarToGangResponse(gangCarId));
         })
         .Produces(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
