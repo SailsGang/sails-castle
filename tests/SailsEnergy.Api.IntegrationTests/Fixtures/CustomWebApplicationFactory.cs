@@ -61,22 +61,20 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         var host = base.CreateHost(builder);
 
         // Initialize database after host is created
-        if (!_databaseInitialized)
-        {
-            using var scope = host.Services.CreateScope();
+        if (_databaseInitialized) return host;
+        using var scope = host.Services.CreateScope();
 
-            // Apply EF Core migrations
-            var identityDb = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            identityDb.Database.Migrate();
+        // Apply EF Core migrations
+        var identityDb = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        identityDb.Database.Migrate();
 
-            var appDb = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            appDb.Database.Migrate();
+        var appDb = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        appDb.Database.Migrate();
 
-            // Seed roles
-            DatabaseSeeder.SeedAsync(host.Services).GetAwaiter().GetResult();
+        // Seed roles
+        DatabaseSeeder.SeedAsync(host.Services).GetAwaiter().GetResult();
 
-            _databaseInitialized = true;
-        }
+        _databaseInitialized = true;
 
         return host;
     }
@@ -119,17 +117,17 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
     public new async Task DisposeAsync()
     {
-        // Stop the host first to let Wolverine cleanup
         try
         {
-            await Task.Delay(500); // Give Wolverine time to cleanup
+            await base.DisposeAsync();
         }
-        catch { }
+        catch
+        {
+            // Ignore cleanup errors
+        }
 
         await Task.WhenAll(
             _postgresContainer.StopAsync(),
             _rabbitMqContainer.StopAsync());
-
-        await base.DisposeAsync();
     }
 }
