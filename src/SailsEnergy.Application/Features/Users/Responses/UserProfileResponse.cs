@@ -1,6 +1,6 @@
 namespace SailsEnergy.Application.Features.Users.Responses;
 
-public record UserProfileResponse(
+public sealed record UserProfileResponse(
     Guid Id,
     string Email,
     string DisplayName,

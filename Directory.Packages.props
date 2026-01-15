@@ -11,6 +11,7 @@
     <!-- Marten - Document DB + Event Sourcing -->
     <PackageVersion Include="Asp.Versioning.Http" Version="8.1.1" />
     <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.RabbitMQ" Version="9.0.0" />
     <PackageVersion Include="Marten" Version="8.16.4" />
     <PackageVersion Include="Marten.AspNetCore" Version="8.16.4" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.1" />

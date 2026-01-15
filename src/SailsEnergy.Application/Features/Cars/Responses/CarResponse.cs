@@ -1,6 +1,6 @@
 namespace SailsEnergy.Application.Features.Cars.Responses;
 
-public record CarResponse(
+public sealed record CarResponse(
     Guid Id,
     string? Name,
     string Model,

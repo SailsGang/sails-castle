@@ -90,6 +90,14 @@ public static class InfrastructureServiceExtensions
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.AddScoped<IJwtService, JwtService>();
 
+        // Energy Log settings
+        services.Configure<SailsEnergy.Application.Settings.EnergyLogSettings>(
+            configuration.GetSection(SailsEnergy.Application.Settings.EnergyLogSettings.SectionName));
+
+        // Gang settings
+        services.Configure<SailsEnergy.Application.Settings.GangSettings>(
+            configuration.GetSection(SailsEnergy.Application.Settings.GangSettings.SectionName));
+
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IIdempotencyService, IdempotencyService>();
 

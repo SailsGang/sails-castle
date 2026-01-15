@@ -1,3 +1,3 @@
 namespace SailsEnergy.Application.Features.Gangs.Responses;
 
-public record CreateGangResponse(Guid GangId);
+public sealed record CreateGangResponse(Guid GangId);

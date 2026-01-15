@@ -40,7 +40,15 @@ public static class AddCarToGangHandler
 
         var gangCar = GangCar.Create(command.GangId, command.CarId, currentUser.UserId!.Value);
         dbContext.GangCars.Add(gangCar);
-        await dbContext.SaveChangesAsync(ct);
+
+        try
+        {
+            await dbContext.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException)
+        {
+            throw new BusinessRuleException(ErrorCodes.Conflict, "Car already in gang.");
+        }
 
         await notificationService.NotifyGangAsync(
             command.GangId,

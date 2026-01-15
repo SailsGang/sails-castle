@@ -6,6 +6,7 @@ using SailsEnergy.Application.Features.Gangs.Responses;
 using SailsEnergy.Application.Notifications;
 using SailsEnergy.Application.Telemetry;
 using SailsEnergy.Domain.Common;
+using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.Exceptions;
 
 namespace SailsEnergy.Application.Features.Gangs.Commands.DeleteGang;
@@ -39,6 +40,15 @@ public static class DeleteGangHandler
             .ToListAsync(ct);
 
         gang.SoftDelete(currentUser.UserId!.Value);
+
+        var auditLog = AuditLog.Create(
+            AuditActions.GangDeleted,
+            nameof(Gang),
+            command.GangId,
+            currentUser.UserId!.Value,
+            $"Gang '{gang.Name}' deleted with {memberUserIds.Count} members");
+        dbContext.AuditLogs.Add(auditLog);
+
         await dbContext.SaveChangesAsync(ct);
 
         await cache.InvalidateEntityAsync<GangResponse>(command.GangId, ct);

@@ -14,7 +14,10 @@ public class GangCarConfiguration : IEntityTypeConfiguration<GangCar>
 
         builder.HasIndex(e => e.GangId);
         builder.HasIndex(e => e.CarId);
-        builder.HasIndex(e => new { e.GangId, e.CarId });
+
+        builder.HasIndex(e => new { e.GangId, e.CarId })
+            .IsUnique()
+            .HasFilter("\"IsDeleted\" = false");
 
         builder.Ignore(e => e.DomainEvents);
     }

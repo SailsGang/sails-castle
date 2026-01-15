@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SailsEnergy.Application.Abstractions;
+using SailsEnergy.Application.Settings;
 using SailsEnergy.Application.Telemetry;
 using SailsEnergy.Domain.Common;
 using SailsEnergy.Domain.Exceptions;
@@ -13,6 +15,7 @@ public static class UpdateEnergyLogHandler
         UpdateEnergyLogCommand command,
         IAppDbContext dbContext,
         ICurrentUserService currentUser,
+        IOptions<EnergyLogSettings> settings,
         ILogger<UpdateEnergyLogCommand> logger,
         CancellationToken ct)
     {
@@ -22,6 +25,7 @@ public static class UpdateEnergyLogHandler
         activity?.SetTag("user.id", currentUser.UserId.ToString());
 
         var userId = currentUser.UserId!.Value;
+        var editWindow = TimeSpan.FromMinutes(settings.Value.EditWindowMinutes);
 
         var log = await dbContext.EnergyLogs
             .FirstOrDefaultAsync(l => l.Id == command.LogId, ct);
@@ -32,11 +36,11 @@ public static class UpdateEnergyLogHandler
             throw new BusinessRuleException(ErrorCodes.Forbidden, "You can only edit your own logs.");
 
         if (command.EnergyKwh.HasValue)
-            log.SetEnergyKwh(command.EnergyKwh.Value, userId);
+            log.SetEnergyKwh(command.EnergyKwh.Value, userId, editWindow);
         if (command.ChargingDate.HasValue)
-            log.SetChargingDate(command.ChargingDate.Value, userId);
+            log.SetChargingDate(command.ChargingDate.Value, userId, editWindow);
         if (command.Notes is not null)
-            log.SetNotes(command.Notes, userId);
+            log.SetNotes(command.Notes, userId, editWindow);
 
         await dbContext.SaveChangesAsync(ct);
 

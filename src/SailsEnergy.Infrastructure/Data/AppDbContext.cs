@@ -14,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Period> Periods => Set<Period>();
     public DbSet<Tariff> Tariffs => Set<Tariff>();
     public DbSet<EnergyLog> EnergyLogs => Set<EnergyLog>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

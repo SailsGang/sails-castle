@@ -5,6 +5,7 @@ using SailsEnergy.Application.Common;
 using SailsEnergy.Application.Notifications;
 using SailsEnergy.Application.Telemetry;
 using SailsEnergy.Domain.Common;
+using SailsEnergy.Domain.Entities;
 using SailsEnergy.Domain.Exceptions;
 using SailsEnergy.Domain.ValueObjects;
 
@@ -41,6 +42,15 @@ public static class RemoveMemberHandler
 
         var removedUserId = member.UserId;
         member.Deactivate(currentUser.UserId!.Value);
+
+        var auditLog = AuditLog.Create(
+            AuditActions.MemberRemoved,
+            nameof(GangMember),
+            command.MemberId,
+            currentUser.UserId!.Value,
+            $"User {removedUserId} removed from gang {command.GangId}");
+        dbContext.AuditLogs.Add(auditLog);
+
         await dbContext.SaveChangesAsync(ct);
 
         await notificationService.NotifyGangAsync(

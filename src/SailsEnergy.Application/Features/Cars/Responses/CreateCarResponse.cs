@@ -1,3 +1,3 @@
 namespace SailsEnergy.Application.Features.Cars.Responses;
 
-public record CreateCarResponse(Guid CarId);
+public sealed record CreateCarResponse(Guid CarId);

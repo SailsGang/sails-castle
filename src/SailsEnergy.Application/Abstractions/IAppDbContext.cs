@@ -14,6 +14,7 @@ public interface IAppDbContext
     DbSet<Period> Periods { get; }
     DbSet<Tariff> Tariffs { get; }
     DbSet<EnergyLog> EnergyLogs { get; }
+    DbSet<AuditLog> AuditLogs { get; }
 
     DatabaseFacade Database { get; }
 

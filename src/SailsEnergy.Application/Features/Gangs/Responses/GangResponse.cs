@@ -3,7 +3,7 @@ namespace SailsEnergy.Application.Features.Gangs.Responses;
 /// <summary>
 /// Gang details response
 /// </summary>
-public record GangResponse(
+public sealed record GangResponse(
     Guid Id,
     string Name,
     string? Description,
@@ -13,7 +13,7 @@ public record GangResponse(
 /// <summary>
 /// Gang list item with user's role
 /// </summary>
-public record GangListItem(
+public sealed record GangListItem(
     Guid Id,
     string Name,
     string? Description,
@@ -24,7 +24,7 @@ public record GangListItem(
 /// <summary>
 /// Gang list item with gang members
 /// </summary>
-public record GangMemberResponse(
+public sealed record GangMemberResponse(
     Guid Id,
     Guid UserId,
     string DisplayName,
@@ -35,7 +35,7 @@ public record GangMemberResponse(
 /// <summary>
 /// Gang list item with gang cars
 /// </summary>
-public record GangCarResponse(
+public sealed record GangCarResponse(
     Guid Id,
     Guid CarId,
     string CarName,

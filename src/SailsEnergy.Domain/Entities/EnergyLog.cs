@@ -6,7 +6,7 @@ namespace SailsEnergy.Domain.Entities;
 
 public class EnergyLog : SoftDeletableEntity
 {
-    private static readonly TimeSpan _editWindow = TimeSpan.FromMinutes(5);
+    public static readonly TimeSpan DefaultEditWindow = TimeSpan.FromMinutes(5);
 
     public Guid GangId { get; private set; }
     public Guid GangCarId { get; private set; }
@@ -52,9 +52,9 @@ public class EnergyLog : SoftDeletableEntity
         return log;
     }
 
-    public void SetEnergyKwh(decimal energyKwh, Guid updatedBy)
+    public void SetEnergyKwh(decimal energyKwh, Guid updatedBy, TimeSpan? editWindow = null)
     {
-        EnsureWithinEditWindow();
+        EnsureWithinEditWindow(editWindow ?? DefaultEditWindow);
 
         if (energyKwh <= 0)
             throw new ValidationException(nameof(energyKwh), "Energy must be greater than zero.");
@@ -63,25 +63,25 @@ public class EnergyLog : SoftDeletableEntity
         SetUpdated(updatedBy);
     }
 
-    public void SetNotes(string? notes, Guid updatedBy)
+    public void SetNotes(string? notes, Guid updatedBy, TimeSpan? editWindow = null)
     {
-        EnsureWithinEditWindow();
+        EnsureWithinEditWindow(editWindow ?? DefaultEditWindow);
 
         Notes = notes;
         SetUpdated(updatedBy);
     }
 
-    public void SetChargingDate(DateTimeOffset chargingDate, Guid updatedBy)
+    public void SetChargingDate(DateTimeOffset chargingDate, Guid updatedBy, TimeSpan? editWindow = null)
     {
-        EnsureWithinEditWindow();
+        EnsureWithinEditWindow(editWindow ?? DefaultEditWindow);
 
         ChargingDate = chargingDate;
         SetUpdated(updatedBy);
     }
 
-    private void EnsureWithinEditWindow()
+    private void EnsureWithinEditWindow(TimeSpan editWindow)
     {
-        if (DateTimeOffset.UtcNow - CreatedAt > _editWindow)
-            throw new BusinessRuleException("EDIT_WINDOW_EXPIRED", "Energy logs can only be modified within 5 minutes of creation.");
+        if (DateTimeOffset.UtcNow - CreatedAt > editWindow)
+            throw new BusinessRuleException("EDIT_WINDOW_EXPIRED", $"Energy logs can only be modified within {(int)editWindow.TotalMinutes} minutes of creation.");
     }
 }

@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SailsEnergy.Application.Abstractions;
 using SailsEnergy.Application.Common;
 using SailsEnergy.Application.Notifications;
+using SailsEnergy.Application.Settings;
 using SailsEnergy.Application.Telemetry;
 using SailsEnergy.Domain.Common;
 using SailsEnergy.Domain.Entities;
@@ -18,6 +20,7 @@ public static class AddMemberHandler
         IAppDbContext dbContext,
         ICurrentUserService currentUser,
         ICacheService cache,
+        IOptions<GangSettings> gangSettings,
         ILogger<AddMemberCommand> logger,
         IRealtimeNotificationService notificationService,
         CancellationToken ct)
@@ -25,9 +28,16 @@ public static class AddMemberHandler
         using var activity = ActivitySources.Members.StartActivity("AddMember");
         activity?.SetTag("gang.id", command.GangId.ToString());
         activity?.SetTag("user.id", currentUser.UserId?.ToString());
+
         var gangExists = await dbContext.Gangs.AnyAsync(g => g.Id == command.GangId, ct);
         if (!gangExists)
             throw new BusinessRuleException(ErrorCodes.NotFound, "Gang not found.");
+
+        var currentMemberCount = await dbContext.GangMembers
+            .CountAsync(m => m.GangId == command.GangId && m.IsActive, ct);
+        if (currentMemberCount >= gangSettings.Value.MaxMembersPerGang)
+            throw new BusinessRuleException("MEMBER_LIMIT_REACHED",
+                $"Gang has reached the maximum of {gangSettings.Value.MaxMembersPerGang} members.");
 
         var memberships = await dbContext.GangMembers
             .IgnoreQueryFilters()
@@ -51,9 +61,7 @@ public static class AddMemberHandler
             currentUser.UserId, command.UserId, command.GangId);
 
         if (existingMember is not null)
-        {
             existingMember.Reactivate(currentUser.UserId!.Value);
-        }
         else
         {
             var member = GangMember.Create(command.GangId, command.UserId, MemberRole.Member, currentUser.UserId!.Value);

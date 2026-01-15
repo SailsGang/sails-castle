@@ -9,7 +9,7 @@ namespace SailsEnergy.Application.Features.Auth.Responses;
 /// <param name="UserId">Authenticated user's unique identifier</param>
 /// <param name="Email">User's email address</param>
 /// <param name="DisplayName">User's display name</param>
-public record AuthSuccessResponse(
+public sealed record AuthSuccessResponse(
     string AccessToken,
     string RefreshToken,
     DateTimeOffset ExpiresAt,

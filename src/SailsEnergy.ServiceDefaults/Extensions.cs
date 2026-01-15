@@ -83,11 +83,23 @@ public static class ServiceDefaultsExtensions
         {
             var connectionString = builder.Configuration.GetConnectionString("sailsenergy")
                                    ?? builder.Configuration.GetConnectionString("Database");
+            
+            var rabbitMqConnectionString = builder.Configuration.GetConnectionString("messaging")
+                                           ?? builder.Configuration.GetConnectionString("RabbitMQ");
 
             var healthChecksBuilder = builder.Services.AddHealthChecks()
                 .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
 
-            if (!string.IsNullOrEmpty(connectionString)) healthChecksBuilder.AddNpgSql(connectionString, name: "postgresql", tags: ["db", "ready"]);
+            if (!string.IsNullOrEmpty(connectionString)) 
+                healthChecksBuilder.AddNpgSql(connectionString, name: "postgresql", tags: ["db", "ready"]);
+            
+            if (!string.IsNullOrEmpty(rabbitMqConnectionString))
+            {
+                healthChecksBuilder.AddRabbitMQ(sp => new RabbitMQ.Client.ConnectionFactory
+                {
+                    Uri = new Uri(rabbitMqConnectionString)
+                }.CreateConnectionAsync().GetAwaiter().GetResult(), name: "rabbitmq", tags: ["messaging", "ready"]);
+            }
 
             return builder;
         }

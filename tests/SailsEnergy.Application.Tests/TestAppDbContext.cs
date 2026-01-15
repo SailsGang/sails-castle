@@ -28,6 +28,7 @@ public class TestAppDbContext : IAppDbContext
     public DbSet<UserProfile> UserProfiles => _context.UserProfiles;
     public DbSet<Period> Periods => _context.Periods;
     public DbSet<Tariff> Tariffs => _context.Tariffs;
+    public DbSet<AuditLog> AuditLogs => _context.AuditLogs;
 
     public DatabaseFacade Database => _context.Database;
 
@@ -43,6 +44,7 @@ public class TestAppDbContext : IAppDbContext
         public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
         public DbSet<Period> Periods => Set<Period>();
         public DbSet<Tariff> Tariffs => Set<Tariff>();
+        public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -54,6 +56,7 @@ public class TestAppDbContext : IAppDbContext
             modelBuilder.Entity<UserProfile>().HasKey(u => u.Id);
             modelBuilder.Entity<Period>().HasKey(p => p.Id);
             modelBuilder.Entity<Tariff>().HasKey(t => t.Id);
+            modelBuilder.Entity<AuditLog>().HasKey(a => a.Id);
         }
     }
 }
