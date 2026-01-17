@@ -17,7 +17,7 @@ public class GangCarTests
         // Assert
         gangCar.GangId.Should().Be(_gangId);
         gangCar.CarId.Should().Be(_carId);
-        gangCar.IsActive.Should().BeTrue();
+        gangCar.IsDeleted.Should().BeFalse();
         gangCar.Id.Should().NotBeEmpty();
         gangCar.CreatedBy.Should().Be(_memberId);
         gangCar.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
@@ -31,12 +31,12 @@ public class GangCarTests
         var updater = Guid.NewGuid();
 
         // Act
-        gangCar.Deactivate(updater);
+        gangCar.SoftDelete(updater);
 
         // Assert
-        gangCar.IsActive.Should().BeFalse();
-        gangCar.UpdatedBy.Should().Be(updater);
-        gangCar.UpdatedAt.Should().NotBeNull();
+        gangCar.IsDeleted.Should().BeTrue();
+        gangCar.DeletedBy.Should().Be(updater);
+        gangCar.DeletedAt.Should().NotBeNull();
     }
 
     [Fact]
@@ -44,15 +44,15 @@ public class GangCarTests
     {
         // Arrange
         var gangCar = GangCar.Create(_gangId, _carId, _memberId);
-        gangCar.Deactivate(Guid.NewGuid());
+        gangCar.SoftDelete(Guid.NewGuid());
         var reactivator = Guid.NewGuid();
 
         // Act
-        gangCar.Activate(reactivator);
+        gangCar.Restore();
 
         // Assert
-        gangCar.IsActive.Should().BeTrue();
-        gangCar.UpdatedBy.Should().Be(reactivator);
+        gangCar.IsDeleted.Should().BeFalse();
+        gangCar.UpdatedBy.Should().BeNull();
     }
 
     [Fact]

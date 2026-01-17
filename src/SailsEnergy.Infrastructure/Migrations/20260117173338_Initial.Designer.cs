@@ -12,8 +12,8 @@ using SailsEnergy.Infrastructure.Data;
 namespace SailsEnergy.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260112110654_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260117173338_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,48 @@ namespace SailsEnergy.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("SailsEnergy.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("PerformedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PerformedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntityId");
+
+                    b.HasIndex("PerformedAt");
+
+                    b.HasIndex("PerformedByUserId");
+
+                    b.HasIndex("EntityType", "EntityId");
+
+                    b.ToTable("audit_logs", (string)null);
+                });
 
             modelBuilder.Entity("SailsEnergy.Domain.Entities.Car", b =>
                 {
@@ -209,10 +251,16 @@ namespace SailsEnergy.Infrastructure.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("GangId")
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
@@ -227,7 +275,9 @@ namespace SailsEnergy.Infrastructure.Migrations
 
                     b.HasIndex("GangId");
 
-                    b.HasIndex("GangId", "CarId");
+                    b.HasIndex("GangId", "CarId")
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = false");
 
                     b.ToTable("gang_cars", (string)null);
                 });

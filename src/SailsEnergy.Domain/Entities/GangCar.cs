@@ -2,11 +2,10 @@ using SailsEnergy.Domain.Common;
 
 namespace SailsEnergy.Domain.Entities;
 
-public class GangCar : AuditableEntity
+public class GangCar : SoftDeletableEntity
 {
     public Guid GangId { get; private set; }
     public Guid CarId { get; private set; }
-    public bool IsActive { get; private set; }
 
     private GangCar() { }
 
@@ -15,24 +14,11 @@ public class GangCar : AuditableEntity
         var gangCar = new GangCar
         {
             GangId = gangId,
-            CarId = carId,
-            IsActive = true
+            CarId = carId
         };
 
         gangCar.SetCreated(createdBy);
 
         return gangCar;
-    }
-
-    public void Deactivate(Guid updatedBy)
-    {
-        IsActive = false;
-        SetUpdated(updatedBy);
-    }
-
-    public void Activate(Guid updatedBy)
-    {
-        IsActive = true;
-        SetUpdated(updatedBy);
     }
 }

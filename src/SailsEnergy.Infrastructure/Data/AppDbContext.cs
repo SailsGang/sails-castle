@@ -27,6 +27,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Car>().HasQueryFilter(e => !e.IsDeleted);
 
         modelBuilder.Entity<GangMember>().HasQueryFilter(e => e.IsActive);
-        modelBuilder.Entity<GangCar>().HasQueryFilter(e => e.IsActive);
+        modelBuilder.Entity<GangCar>().HasQueryFilter(e => e.IsDeleted);
     }
 }

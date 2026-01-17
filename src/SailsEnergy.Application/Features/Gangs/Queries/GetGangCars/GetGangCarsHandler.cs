@@ -14,7 +14,7 @@ public static class GetGangCarsHandler
     {
         var baseQuery = from gc in dbContext.GangCars.AsNoTracking()
             join c in dbContext.Cars.AsNoTracking() on gc.CarId equals c.Id
-            where gc.GangId == query.GangId && gc.IsActive
+            where gc.GangId == query.GangId && !gc.IsDeleted
             select new GangCarResponse(
                 gc.Id,
                 gc.CarId,

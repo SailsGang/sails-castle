@@ -43,7 +43,7 @@ public static class LogEnergyHandler
         activity?.SetTag("period.id", activePeriod.Id.ToString());
 
         var gangCar = await dbContext.GangCars
-            .FirstOrDefaultAsync(gc => gc.Id == command.GangCarId && gc.GangId == command.GangId && gc.IsActive, ct);
+            .FirstOrDefaultAsync(gc => gc.Id == command.GangCarId && gc.GangId == command.GangId && !gc.IsDeleted, ct);
         if (gangCar is null)
             throw new BusinessRuleException("CAR_NOT_IN_GANG", "This car is not assigned to the gang.");
 

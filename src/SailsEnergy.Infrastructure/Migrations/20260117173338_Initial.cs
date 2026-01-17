@@ -6,11 +6,28 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SailsEnergy.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "audit_logs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Action = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    EntityType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    EntityId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PerformedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Details = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    PerformedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_audit_logs", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "cars",
                 columns: table => new
@@ -68,11 +85,13 @@ namespace SailsEnergy.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     GangId = table.Column<Guid>(type: "uuid", nullable: false),
                     CarId = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -183,6 +202,26 @@ namespace SailsEnergy.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_audit_logs_EntityId",
+                table: "audit_logs",
+                column: "EntityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_audit_logs_EntityType_EntityId",
+                table: "audit_logs",
+                columns: new[] { "EntityType", "EntityId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_audit_logs_PerformedAt",
+                table: "audit_logs",
+                column: "PerformedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_audit_logs_PerformedByUserId",
+                table: "audit_logs",
+                column: "PerformedByUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_cars_OwnerId",
                 table: "cars",
                 column: "OwnerId");
@@ -220,7 +259,9 @@ namespace SailsEnergy.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_gang_cars_GangId_CarId",
                 table: "gang_cars",
-                columns: new[] { "GangId", "CarId" });
+                columns: new[] { "GangId", "CarId" },
+                unique: true,
+                filter: "\"IsDeleted\" = false");
 
             migrationBuilder.CreateIndex(
                 name: "IX_gang_members_GangId",
@@ -272,6 +313,9 @@ namespace SailsEnergy.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "audit_logs");
+
             migrationBuilder.DropTable(
                 name: "cars");
 

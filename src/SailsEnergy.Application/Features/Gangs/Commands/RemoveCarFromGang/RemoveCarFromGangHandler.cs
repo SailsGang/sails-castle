@@ -36,7 +36,7 @@ public static class RemoveCarFromGangHandler
         else
             await gangAuth.RequireMembershipAsync(command.GangId, ct);
 
-        gangCar.Deactivate(currentUser.UserId!.Value);
+        gangCar.SoftDelete(currentUser.UserId!.Value);
         await dbContext.SaveChangesAsync(ct);
 
         await notificationService.NotifyGangAsync(
