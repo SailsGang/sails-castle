@@ -1,7 +1,8 @@
 import { 
   ApplicationConfig, 
   provideBrowserGlobalErrorListeners, 
-  isDevMode 
+  isDevMode,
+  APP_INITIALIZER
 } from '@angular/core';
 import { provideRouter, withPreloading, PreloadAllModules } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -10,6 +11,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
+import { AuthService } from './core/auth/auth.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,5 +23,11 @@ export const appConfig: ApplicationConfig = {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
     }),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (auth: AuthService) => () => auth.init(),
+      deps: [AuthService],
+      multi: true
+    }
   ],
 };

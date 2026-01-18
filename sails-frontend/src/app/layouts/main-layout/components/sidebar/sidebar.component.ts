@@ -9,97 +9,90 @@ import { LogoComponent } from '../../../../shared/components/logo/logo.component
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, LogoComponent],
   template: `
-    <aside class="sidebar-container">
+    <aside class="sidebar-container" (mousemove)="onMouseMove($event)" (mouseleave)="onMouseLeave()">
       <div class="sidebar-glass">
-        <!-- Spotlight Layer -->
+        <!-- Spotlight Effect Layer -->
         <div class="spotlight-layer" [style.background]="spotlightStyle()"></div>
 
-        <!-- Header (Centered Logo) -->
+        <!-- Header -->
         <div class="sidebar-header">
-          <app-logo size="large" />
-          <button class="close-btn" (click)="close.emit()" aria-label="Close menu">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+          <app-logo size="medium"></app-logo>
+          <button class="close-btn" (click)="close.emit()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
 
         <!-- Navigation -->
-        <nav class="sidebar-nav" (mousemove)="onMouseMove($event)" (mouseleave)="onMouseLeave()">
+        <nav class="sidebar-nav">
+          <div class="nav-label">MAIN MENU</div>
           
-          <span class="nav-label">MENU</span>
-          
-          <!-- Dashboard (Blue) -->
-          <a routerLink="/dashboard" routerLinkActive="active-blue" class="nav-item item-blue">
+          <a routerLink="/dashboard" routerLinkActive="active-blue" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
             <div class="nav-icon-wrapper">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7"/>
-                <rect x="14" y="3" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/>
-                <rect x="3" y="14" width="7" height="7"/>
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
             </div>
             <span>Dashboard</span>
           </a>
 
-          <!-- Gangs (Purple) -->
-          <a routerLink="/gangs" routerLinkActive="active-purple" class="nav-item item-purple">
+          <div class="nav-label">MANAGEMENT</div>
+
+          <a routerLink="/gangs" routerLinkActive="active-purple" class="nav-item">
             <div class="nav-icon-wrapper">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
               </svg>
             </div>
             <span>My Gangs</span>
           </a>
 
-          <!-- Cars (Cyan) -->
-          <a routerLink="/cars" routerLinkActive="active-cyan" class="nav-item item-cyan">
+          <a routerLink="/cars" routerLinkActive="active-cyan" class="nav-item">
             <div class="nav-icon-wrapper">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                 <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
-                 <circle cx="7" cy="17" r="2"/>
-                 <path d="M9 17h6"/>
-                 <circle cx="17" cy="17" r="2"/>
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path>
+                <circle cx="7" cy="17" r="2"></circle>
+                <path d="M9 17h6"></path>
+                <circle cx="17" cy="17" r="2"></circle>
               </svg>
             </div>
             <span>My Cars</span>
           </a>
 
-          <!-- Energy (Green) -->
-          <a routerLink="/energy" routerLinkActive="active-green" class="nav-item item-green">
+          <a routerLink="/energy" routerLinkActive="active-green" class="nav-item">
             <div class="nav-icon-wrapper">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
               </svg>
             </div>
-            <span>Activity Log</span>
+            <span>Energy Logs</span>
           </a>
 
-          <span class="nav-label mt-4">SETTINGS</span>
-
-          <!-- Profile (Orange/Default) -->
-          <a routerLink="/profile" routerLinkActive="active-orange" class="nav-item item-orange">
-            <div class="nav-icon-wrapper">
+          <div class="mt-4"></div> <!-- Spacer -->
+          
+          <a routerLink="/profile" routerLinkActive="active-orange" class="nav-item">
+             <div class="nav-icon-wrapper">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
               </svg>
             </div>
             <span>Profile</span>
           </a>
+
         </nav>
 
         <!-- Premium Profile Footer -->
         <div class="sidebar-footer">
           <div class="profile-card">
-            <!-- Avatar -->
             <div class="avatar-wrapper">
               <div class="avatar">
-                <span>{{ getUserInitials() }}</span>
+                {{ getUserInitials() }}
               </div>
             </div>
             
@@ -108,13 +101,23 @@ import { LogoComponent } from '../../../../shared/components/logo/logo.component
               <p class="user-email">{{ authService.user()?.email }}</p>
             </div>
             
-            <button class="logout-btn" (click)="authService.logout()" aria-label="Sign out">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-              </svg>
-            </button>
+            <div class="actions">
+              <button class="icon-btn" aria-label="Notifications">
+                <div class="dot"></div>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+              </button>
+
+              <button class="icon-btn logout-btn" (click)="authService.logout()" aria-label="Sign out">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -365,7 +368,13 @@ import { LogoComponent } from '../../../../shared/components/logo/logo.component
       text-overflow: ellipsis;
     }
 
-    .logout-btn {
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .icon-btn {
       background: transparent;
       border: none;
       color: var(--text-muted);
@@ -378,19 +387,37 @@ import { LogoComponent } from '../../../../shared/components/logo/logo.component
       cursor: pointer;
       transition: all 0.2s;
       opacity: 0.6;
+      position: relative;
     }
 
-    .profile-card:hover .logout-btn {
+    .profile-card:hover .icon-btn {
       opacity: 1;
     }
 
-    .logout-btn:hover {
-      color: #ef4444;
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
     }
     
-    .logout-btn svg {
+    .logout-btn:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+    }
+    
+    .icon-btn svg {
       width: 18px;
       height: 18px;
+    }
+    
+    .dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 6px;
+      height: 6px;
+      background: #ef4444;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     @media (max-width: 768px) {
@@ -448,9 +475,5 @@ export class SidebarComponent {
   getUserInitials(): string {
     const name = this.authService.user()?.displayName || '?';
     return name.slice(0, 2).toUpperCase();
-  }
-  
-  onQuickAction(): void {
-    console.log('Quick action clicked');
   }
 }

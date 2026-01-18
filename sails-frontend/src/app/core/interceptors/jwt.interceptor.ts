@@ -1,5 +1,5 @@
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { catchError, from, switchMap, throwError } from 'rxjs';
 import { TokenService } from '../auth/token.service';
 import { AuthService } from '../auth/auth.service';
@@ -8,7 +8,7 @@ let isRefreshing = false;
 
 export const jwtInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
   const tokenService = inject(TokenService);
-  const authService = inject(AuthService);
+  const injector = inject(Injector); // Lazy inject to avoid circular dep
   
   // Skip auth endpoints
   if (req.url.includes('/auth/login') || 
@@ -22,6 +22,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   if (accessToken) {
     // Check if token needs refresh before making request
     if (tokenService.isTokenExpired(accessToken) && !isRefreshing) {
+      const authService = injector.get(AuthService); // Get lazily
       isRefreshing = true;
       return from(authService.refreshToken()).pipe(
         switchMap((success) => {
@@ -50,6 +51,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
       catchError((error: HttpErrorResponse) => {
         // Handle 401 - try to refresh token
         if (error.status === 401 && !isRefreshing) {
+          const authService = injector.get(AuthService); // Get lazily
           isRefreshing = true;
           return from(authService.refreshToken()).pipe(
             switchMap((success) => {

@@ -36,7 +36,11 @@ export class AuthService {
   readonly initialized = this._initialized.asReadonly();
   
   constructor() {
-    this.initializeAuth();
+    // Initialization moved to AppComponent to avoid circular dependency with JwtInterceptor
+  }
+  
+  async init(): Promise<void> {
+    await this.initializeAuth();
   }
   
   private async initializeAuth(): Promise<void> {
@@ -44,8 +48,15 @@ export class AuthService {
     if (token && !this.tokenService.isTokenExpired(token)) {
       try {
         await this.fetchCurrentUser();
-      } catch {
-        this.tokenService.clearTokens();
+      } catch (error) {
+        // Only clear tokens if it's an authentication error (401)
+        // Keep them for network errors (status 0) or server errors (500)
+        if (error instanceof HttpErrorResponse && error.status === 401) {
+          console.warn('Session expired, clearing tokens');
+          this.tokenService.clearTokens();
+        } else {
+          console.error('Failed to restore session:', error);
+        }
       }
     }
     this._initialized.set(true);

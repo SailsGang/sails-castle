@@ -132,8 +132,11 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
 
       .sidebar-wrapper {
         position: sticky;
+        top: 0;
+        height: 100vh;
         transform: none;
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+        box-shadow: none; /* Shadow handled by sidebar component */
+        overflow-y: auto; /* Allow internal scrolling */
       }
 
       .main-content {
