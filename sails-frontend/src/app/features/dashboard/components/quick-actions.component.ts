@@ -1,4 +1,4 @@
-import { Component, output } from '@angular/core';
+import { Component, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -6,13 +6,18 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="bento-card actions-card">
+    <div class="bento-card actions-card"
+         (mousemove)="onCardMouseMove($event)" 
+         (mouseleave)="onCardMouseLeave()"
+         [style.transform]="cardTransform()">
+      <div class="card-glow"></div>
       <h3 class="card-title">Quick Actions</h3>
       <div class="actions-grid">
         <button class="action-btn primary" (click)="onAction('log')">
+          <div class="shine"></div>
           <div class="icon-box">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              <path class="lightning" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
             </svg>
           </div>
           <span>Log Energy</span>
@@ -64,14 +69,25 @@ import { CommonModule } from '@angular/common';
       overflow: hidden;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: transform 0.1s cubic-bezier(0.1, 0.9, 0.2, 1), box-shadow 0.3s ease; /* Faster transform for tilt */
       height: 100%;
     }
 
     .bento-card:hover {
-      transform: translateY(-2px);
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
       border-color: rgba(255, 255, 255, 0.12);
+    }
+    
+    .card-glow {
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%); /* Purple Tint for Actions */
+      filter: blur(40px);
+      opacity: 0.6;
+      pointer-events: none;
     }
     
     .actions-card {
@@ -84,6 +100,7 @@ import { CommonModule } from '@angular/common';
       font-weight: 700;
       color: var(--text-primary);
       margin: 0 0 20px;
+      position: relative; /* Above glow */
     }
 
     .actions-grid {
@@ -92,6 +109,7 @@ import { CommonModule } from '@angular/common';
       grid-template-columns: 1fr 1fr;
       gap: 12px;
       flex: 1;
+      position: relative; /* Above glow */
     }
 
     .action-btn {
@@ -109,16 +127,60 @@ import { CommonModule } from '@angular/common';
 
     .action-btn:hover {
       transform: scale(1.02);
+      /* Inner border light effect */
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
     }
 
     .action-btn.primary {
       grid-column: span 2; /* Full width */
-      background: linear-gradient(135deg, var(--aurora-blue), var(--aurora-purple));
+      background: linear-gradient(135deg, var(--aurora-blue), var(--aurora-purple), var(--aurora-cyan));
+      background-size: 200% 200%;
+      animation: gradientFlow 4s ease infinite;
       color: white;
       flex-direction: row;
       align-items: center;
       justify-content: center;
       gap: 12px;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .shine {
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transform: skewX(-20deg);
+      pointer-events: none;
+    }
+    
+    .action-btn.primary:hover .shine {
+      animation: shineSweep 1.5s infinite;
+    }
+    
+    @keyframes shineSweep {
+      0% { left: -100%; }
+      50% { left: 200%; }
+      100% { left: 200%; }
+    }
+    
+    .lightning {
+      transition: filter 0.3s, transform 0.3s;
+      transform-origin: center;
+    }
+    
+    .action-btn.primary:hover .lightning {
+      filter: drop-shadow(0 0 5px rgba(255,255,255,0.8));
+      transform: scale(1.1);
     }
     
     .action-btn.primary .icon-box {
@@ -169,8 +231,35 @@ import { CommonModule } from '@angular/common';
 })
 export class QuickActionsComponent {
   readonly action = output<string>();
+  
+  // 3D Tilt State for Card
+  readonly cardTransform = signal('');
 
   onAction(type: string): void {
     this.action.emit(type);
+  }
+  
+  // Card Tilt Logic
+  onCardMouseMove(e: MouseEvent) {
+    const card = e.currentTarget as HTMLElement;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const rotateX = ((y - centerY) / centerY) * -3; 
+    const rotateY = ((x - centerX) / centerX) * 3;
+    
+    this.cardTransform.set(
+      `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`
+    );
+  }
+  
+  onCardMouseLeave() {
+    this.cardTransform.set(
+      'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)'
+    );
   }
 }
