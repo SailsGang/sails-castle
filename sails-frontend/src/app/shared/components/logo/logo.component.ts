@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="logo-container" [class.large]="size === 'large'">
+    <div class="logo-container" [ngClass]="size">
       <span class="sails">Sails</span><span class="energy">Energy</span>
     </div>
   `,
@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
       display: inline-flex;
       align-items: baseline;
       font-weight: 700;
-      font-size: 1.75rem;
+      font-size: 1.75rem; /* normal */
       letter-spacing: -0.02em;
       white-space: nowrap;
       line-height: 1.4;
@@ -24,10 +24,13 @@ import { CommonModule } from '@angular/common';
     .logo-container.large {
       font-size: 2.25rem;
     }
-    
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
+
+    .logo-container.medium {
+      font-size: 1.5rem;
+    }
+
+    .logo-container.small {
+      font-size: 1.25rem;
     }
     
     .sails {
@@ -62,5 +65,5 @@ import { CommonModule } from '@angular/common';
   `]
 })
 export class LogoComponent {
-  @Input() size: 'normal' | 'large' = 'normal';
+  @Input() size: 'small' | 'medium' | 'normal' | 'large' = 'normal';
 }

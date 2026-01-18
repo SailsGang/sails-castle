@@ -36,21 +36,22 @@ export const routes: Routes = [
         path: 'dashboard',
         loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
+      // Placeholders for other routes until implemented
       {
         path: 'gangs',
-        loadChildren: () => import('./features/gangs/gangs.routes').then(m => m.GANGS_ROUTES),
+        loadComponent: () => import('./features/gangs/gang-list/gang-list.component').then(m => m.GangListComponent),
       },
       {
         path: 'cars',
-        loadChildren: () => import('./features/cars/cars.routes').then(m => m.CARS_ROUTES),
+        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
         path: 'energy',
-        loadChildren: () => import('./features/energy/energy.routes').then(m => m.ENERGY_ROUTES),
+        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
         path: 'profile',
-        loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent),
+        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
         path: '',
